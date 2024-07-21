@@ -1,0 +1,92 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import "modules/reset";
+
+:root {
+	--background: #202020;
+	--foreground: #303030;
+	--controls: #404040;
+	--controls-hover: #454545;
+	--keys: #505050;
+	--buttons: #606060;
+	--buttons-hover: #707070;
+
+	--text: #f0f0f0;
+	--text-alt: #686868;
+	--green: #7ae854;
+	--red: #e85454;
+	--orange: #e89254;
+	--blue: #54aae8;
+
+	--radius: 20px;
+	--radius-inner: 10px;
+	--radius-small: 5px;
+
+	--transition-fast: 0.1s all ease;
+	--transition-base: 0.3s all ease;
+	--transition-bounce: 0.3s all cubic-bezier(0.68, -0.55, 0.27, 1.55);
+	--shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+	--contour: 1px solid rgba(0, 0, 0, 0.4);
+	--contour-hover: rgba(255, 255, 255, 0.2);
+	--contour-active: rgba(255, 255, 255, 0.75);
+
+	color: var(--text);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+	// position: relative;
+	// width: 100%;
+	// height: 100%;
+	// overflow: hidden;
+	background: url("img/void.svg") repeat left / 20px;
+}
+
+input,
+button {
+	font: inherit;
+	border: 0;
+	&:focus {
+		outline: 0;
+	}
+}
+
+ul {
+	li {
+		list-style: none;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		&::before {
+			content: "";
+			width: 5px;
+			height: 5px;
+			border-radius: 50%;
+			background: var(--buttons);
+		}
+	}
+}
+
+ol {
+	li {
+		list-style: none;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		counter-increment: item;
+		&::before {
+			content: counter(item) ".";
+			margin-right: 10px;
+			color: var(--buttons);
+		}
+	}
+}
+
+svg {
+	pointer-events: none;
+}
+
+canvas {
+	display: block;
+}

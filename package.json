@@ -1,0 +1,20 @@
+{
+  "name": "boringcanvas_v1",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^3.1.1",
+    "sass": "^1.77.8",
+    "svelte": "^4.2.18",
+    "vite": "^5.3.4"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.7.5"
+  }
+}
