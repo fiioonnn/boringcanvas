@@ -31,10 +31,13 @@
 		if (type === "size") {
 			$tools.size === size ? (active = true) : (active = false);
 		}
+		if (type === "eraser") {
+			$tools.eraser ? (active = true) : (active = false);
+		}
 	}
 </script>
 
-<svelte:window on:click={handleWindowClick} />
+<svelte:window on:mousedown={handleWindowClick} />
 
 <button
 	class="toolbar-item"

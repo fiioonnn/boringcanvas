@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from "svelte";
 	import { fade } from "svelte/transition";
+	import { toasts } from "#store/toasts";
 
 	export let source;
 	export let size = 300;
@@ -36,11 +37,23 @@
 
 		const { width, height } = source.canvas;
 
-		view.style.transform = `translate(${(-transform[X] / width) * size}px, ${
-			(-transform[Y] / height) * size
-		}px)`;
+		if (view) {
+			view.style.transform = `translate(${(-transform[X] / width) * size}px, ${
+				(-transform[Y] / height) * size
+			}px)`;
+		}
 
 		requestAnimationFrame(render);
+	}
+
+	function handlePosClick(event) {
+		navigator.clipboard.writeText(`${-transform[X]}:${-transform[Y]}`);
+		toasts.create(
+			"Copied to clipboard",
+			"Coordinates copied to clipboard",
+			"success",
+			3000
+		);
 	}
 </script>
 
@@ -49,26 +62,37 @@
 <div class="minimap">
 	<canvas bind:this={canvas} transition:fade={{ duration: 100 }}></canvas>
 	<div bind:this={view} class="minimap__view"></div>
+	<p class="minimap__pos" on:click={handlePosClick}>
+		{-transform[X]} : {-transform[Y]}
+	</p>
 </div>
 
 <style lang="scss">
 	.minimap {
 		pointer-events: none;
-		opacity: 0.75;
 		position: fixed;
 		right: 20px;
-		top: 20px;
-		canvas {
-			border-radius: var(--radius-inner);
-			box-shadow: var(--shadow);
-			border: var(--contour);
-		}
+		bottom: 20px;
+		overflow: hidden;
+		box-shadow: var(--shadow);
+		border: var(--contour);
+		border-radius: var(--radius-small);
+		user-select: none;
 		&__view {
 			position: absolute;
+			border-radius: var(--radius-small);
 			border: 1px solid var(--red);
-			border-radius: var(--radius-inner);
 			top: 0;
 			left: 0;
+		}
+		&__pos {
+			padding: 10px;
+			background: var(--foreground);
+			text-align: center;
+			color: var(--text-alt);
+			cursor: pointer;
+			pointer-events: all;
+			user-select: all;
 		}
 	}
 </style>

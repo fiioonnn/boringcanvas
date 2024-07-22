@@ -1,16 +1,15 @@
 <script>
 	import { onMount } from "svelte";
-	import { config, tools } from "#store/stores";
+	import { config, tools, app } from "#store/stores";
 
-	import Debugger from "#components/Debug/Debugger.svelte";
 	import MiniMap from "./MiniMap.svelte";
+	import Debugger from "#components/Debug/Debugger.svelte";
+
 	const [X, Y] = [0, 1];
 
 	// Canvas
 	let canvas;
 	let ctx;
-	// Keyboard
-	let keys = {};
 	// Mouse
 	let mouse = {
 		drawing: false,
@@ -25,11 +24,12 @@
 	let transform = [0, 0];
 	// Current drawing path
 	let path = [];
-	// Show minimap
-	let showMiniMap = false;
 
 	onMount(() => {
 		ctx = canvas.getContext("2d");
+
+		// Make context globally available
+		$app.ctx = ctx;
 
 		// Initialize canvas
 		initializeCanvas();
@@ -50,6 +50,17 @@
 
 		// Draw grid
 		drawGrid();
+
+		// Draw logo
+		drawLogo();
+
+		// Go to center
+		transform = [
+			Math.floor((window.innerWidth - canvas.width) / 2),
+			Math.floor((window.innerHeight - canvas.height) / 2),
+		];
+
+		translate();
 	}
 
 	/**
@@ -81,15 +92,46 @@
 	}
 
 	/**
+	 * Draw the logo on the canvas.
+	 */
+	function drawLogo() {
+		const img = new Image();
+		const [width, height] = [300, 246.16];
+
+		img.src = "img/logo.svg";
+		img.onload = () => {
+			ctx.globalAlpha = 0.1; // Set opacity to 0.1
+			ctx.drawImage(
+				img,
+				canvas.width / 2 - width / 2,
+				canvas.height / 2 - height / 2,
+				width,
+				height
+			);
+			ctx.globalAlpha = 1; // Reset opacity to 1
+		};
+	}
+
+	/**
 	 * Handle mouse down event, used to start drawing/panning
 	 * on the canvas.
 	 * @param {MouseEvent} event
 	 */
 	function handleMouseDown(event) {
-		event.button === 0 && !mouse.panning && (mouse.drawing = true);
-		event.button === 1 && !mouse.drawing && (mouse.panning = true);
+		event.button === 0 &&
+			!mouse.panning &&
+			!$tools.eraser &&
+			(mouse.drawing = true);
+		event.button === 1 &&
+			!mouse.drawing &&
+			!$tools.eraser &&
+			(mouse.panning = true);
+		event.button === 2 &&
+			!mouse.drawing &&
+			!mouse.panning &&
+			($tools.eraser = true);
 
-		mouse.pos.last = [event.offsetX, event.offsetY]; // need to be calulated with transform !! <--- !!! <------------------
+		mouse.pos.last = mouse.pos.canvas;
 		mouse.pos.lastWindow = [event.clientX, event.clientY];
 	}
 
@@ -101,8 +143,11 @@
 	function handleMouseUp(event) {
 		event.button === 0 && (mouse.drawing = false);
 		event.button === 1 && (mouse.panning = false);
+		event.button === 2 && ($tools.eraser = false);
 
-		mouse.pos.last = [0, 0];
+		if (!mouse.drawing && !mouse.panning) {
+			mouse.pos.last = [0, 0];
+		}
 
 		// reset the path
 		path = [];
@@ -129,26 +174,6 @@
 	}
 
 	/**
-	 * Handle key down event, used to track keys that are
-	 * currently being pressed.
-	 * @param {KeyboardEvent} event
-	 */
-	function handleKeyDown(event) {
-		keys[event.key] = true;
-
-		if (keys["m"]) showMiniMap = !showMiniMap;
-	}
-
-	/**
-	 * Handle key up event, used to track keys that are
-	 * no longer being pressed.
-	 * @param {KeyboardEvent} event
-	 */
-	function handleKeyUp(event) {
-		keys[event.key] = false;
-	}
-
-	/**
 	 * Handle mouse wheel event, used to zoom in/out on the canvas.
 	 * @param {WheelEvent} event
 	 */
@@ -157,8 +182,8 @@
 
 		if (mouse.drawing || mouse.panning) return;
 
-		keys["Shift"] && (transform[X] += -Math.floor(event.deltaY));
-		!keys["Shift"] && (transform[Y] += -Math.floor(event.deltaY));
+		$app.keys["Shift"] && (transform[X] += -Math.floor(event.deltaY));
+		!$app.keys["Shift"] && (transform[Y] += -Math.floor(event.deltaY));
 
 		checkBorders();
 		translate();
@@ -190,7 +215,6 @@
 		ctx.lineWidth = $tools.size;
 		ctx.lineCap = "round";
 		ctx.lineJoin = "round";
-		console.log(1);
 		ctx.beginPath();
 		ctx.moveTo(mouse.pos.last[X], mouse.pos.last[Y]);
 		ctx.lineTo(mouse.pos.canvas[X], mouse.pos.canvas[Y]);
@@ -236,13 +260,8 @@
 	}
 </script>
 
-<svelte:window
-	on:mouseup={handleMouseUp}
-	on:mousemove={handleMouseMove}
-	on:keydown={handleKeyDown}
-	on:keyup={handleKeyUp}
-/>
-<svelte:body />
+<svelte:window on:mouseup={handleMouseUp} />
+<svelte:body on:mousemove={handleMouseMove} />
 
 <canvas
 	class="canvas"
@@ -252,8 +271,8 @@
 	on:wheel|nonpassive={handleMouseWheel}
 ></canvas>
 
-{#if showMiniMap}
-	<MiniMap bind:source={ctx} size={500} bind:transform />
+{#if $app.showMiniMap}
+	<MiniMap bind:source={ctx} size={400} bind:transform />
 {/if}
 
 <!-- <Debugger

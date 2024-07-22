@@ -4,7 +4,7 @@
 	import IconColor from "#components/Icons/IconColor.svelte";
 	import IconEraser from "#components/Icons/IconEraser.svelte";
 	import IconMenu from "#components/Icons/IconMenu.svelte";
-	import { tools, config } from "#store/stores.js";
+	import { tools, config, app } from "#store/stores.js";
 </script>
 
 <div class="toolbar">
@@ -34,9 +34,10 @@
 	<ToolbarItem
 		icon={IconEraser}
 		fn={() => ($tools.eraser = !$tools.eraser)}
+		type="eraser"
 		toggle
 	/>
-	<ToolbarItem icon={IconMenu} />
+	<ToolbarItem icon={IconMenu} fn={() => ($app.activeModal = "settings")} />
 </div>
 
 <style lang="scss">

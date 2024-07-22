@@ -77,13 +77,68 @@ export const config = writable({
 	],
 	sizes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
 	canvas: {
-		size: [5000, 5000],
+		size: [6000, 6000],
 		background: "#202020",
 		grid: {
 			enabled: true,
 			color: "#272727",
 			divisor: 100,
-			moveStep: 90,
+			moveStep: 80,
 		},
 	},
+	controls: [
+		{ text: "Draw", keys: ["MOUSE LEFT"] },
+		{ text: "Panning", keys: ["MOUSE MIDDLE"] },
+		{ text: "Erase", keys: ["MOUSE RIGHT"] },
+		{ text: "Scroll up", keys: ["MOUSEWHEEL UP"] },
+		{ text: "Scroll down", keys: ["MOUSEWHEEL DOWN"] },
+		{ text: "Scroll left", keys: ["MOUSEWHEEL DOWN", "Shift"] },
+		{ text: "Scroll right", keys: ["MOUSEWHEEL UP", "Shift"] },
+		{ text: "Toggle Minimap", keys: ["m"] },
+		{ text: "Toggle Settings", keys: ["ESC"] },
+		{ text: "Screenshot", keys: ["Control", "S"] },
+	],
+	rules: {
+		list: [
+			{
+				title: "Respectful Content",
+				subRules: [
+					"Do not draw something that could be offensive, discriminatory, or hateful. This includes any content that targets individuals or groups",
+				],
+			},
+			{
+				title: "Privacy and Personal Information",
+				subRules: [
+					"Do not draw or share any personal information about yourself or others, including addresses, phone numbers, or any other sensitive data.",
+				],
+			},
+			{
+				title: "Moderation and Reporting",
+				subRules: [
+					"Our team actively monitors the platform to ensure compliance with these rules. If you see a drawing that violates these guidelines, please report it using the report function.",
+				],
+			},
+			{
+				title: "Server Integrity and Bugs",
+				subRules: [
+					"No hacking, exploiting bugs, or using unauthorized programs to gain an unfair advantage. This includes intentionally crashing the server or disrupting gameplay for others.",
+				],
+			},
+		],
+	},
+});
+
+export const app = writable({
+	version: "1.0.0",
+	ctx: null,
+	keys: {},
+	activeModal: "",
+	showMiniMap: false,
+	isAdmin: false,
+});
+
+const storedUsername = localStorage.getItem("username") || "";
+export const username = writable(storedUsername);
+username.subscribe((value) => {
+	localStorage.setItem("username", value);
 });
