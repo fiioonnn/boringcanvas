@@ -26,6 +26,9 @@
 	.prompt {
 		display: grid;
 		gap: 15px;
+		input {
+			text-align: center;
+		}
 		&__text {
 			font-weight: 700;
 			color: var(--text);

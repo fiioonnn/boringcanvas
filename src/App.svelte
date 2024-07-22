@@ -59,7 +59,7 @@
 	 * @param event
 	 */
 	function handleKeyDown(event) {
-		if (!$screen.active && !$app.activeModal && $prompt.active)
+		if (!$screen.active && !$app.activeModal && !$prompt.active)
 			event.preventDefault();
 
 		$app.keys[event.key] = true;
