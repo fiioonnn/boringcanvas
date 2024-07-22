@@ -6,7 +6,10 @@ function createPromptStore() {
 		placeholder: "",
 		cancel: false,
 		buttonText: "OK",
-		fn: (value) => {},
+		fn: (value) => {
+			return false;
+		},
+
 		active: false,
 	});
 
@@ -20,6 +23,7 @@ function createPromptStore() {
 				cancel,
 				buttonText,
 				fn,
+
 				active: true,
 			};
 			return state;
@@ -35,7 +39,10 @@ function createPromptStore() {
 					placeholder: "",
 					cancel: false,
 					buttonText: "OK",
-					fn: (value) => {},
+					fn: (value) => {
+						return false;
+					},
+
 					active: false,
 				};
 				return state;

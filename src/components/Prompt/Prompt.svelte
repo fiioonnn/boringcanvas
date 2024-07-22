@@ -1,11 +1,21 @@
 <script>
+	import { slide } from "svelte/transition";
 	import { prompt } from "#store/prompt";
 
 	export let value = "";
+	let input;
+	let error;
 
-	function handleClick() {
-		$prompt.fn(value);
-		prompt.hide();
+	function handleSubmit() {
+		if (!value) return input.classList.add("error");
+
+		let err = $prompt.fn(value);
+
+		if (err) {
+			error = err;
+		} else {
+			prompt.hide();
+		}
 	}
 </script>
 
@@ -13,11 +23,21 @@
 	{#if $prompt.text}
 		<p class="prompt__text">{$prompt.text}</p>
 	{/if}
-	<input type="text" bind:value placeholder={$prompt.placeholder} />
+	{#if error}
+		<p class="prompt__error" transition:slide={{ duration: 300 }}>{error}</p>
+	{/if}
+	<form on:submit|preventDefault={handleSubmit}>
+		<input
+			type="text"
+			bind:value
+			bind:this={input}
+			placeholder={$prompt.placeholder}
+		/>
+	</form>
 	<div class="prompt__buttons">
-		<button on:click={handleClick}>{$prompt.buttonText || "OK"}</button>
+		<button on:click={handleSubmit}>{$prompt.buttonText || "OK"}</button>
 		{#if $prompt.cancel}
-			<button on:click={handleClick}>Cancel</button>
+			<button on:click={() => prompt.hide()}>Cancel</button>
 		{/if}
 	</div>
 </div>
@@ -31,7 +51,16 @@
 		}
 		&__text {
 			font-weight: 700;
+			color: var(--text) !important;
+			text-align: center;
+			user-select: none;
+		}
+		&__error {
+			border-radius: var(--radius-inner);
+			padding: 10px;
 			color: var(--text);
+			font-size: 14px;
+			background: var(--red) !important;
 			text-align: center;
 		}
 		&__buttons {

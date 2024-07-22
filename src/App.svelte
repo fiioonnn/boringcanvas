@@ -11,7 +11,7 @@
 
 	import { loader } from "#store/loader";
 	import { screen } from "#store/screen";
-	import { app } from "#store/stores";
+	import { app, username } from "#store/stores";
 	import { toasts } from "#store/toasts";
 	import { prompt } from "#store/prompt";
 	import Controls from "#components/Controls/Controls.svelte";
@@ -19,6 +19,7 @@
 	import Donate from "#components/Donate/Donate.svelte";
 	import Report from "#components/Report/Report.svelte";
 	import AdminPanel from "#components/AdminPanel/AdminPanel.svelte";
+	import { onMount } from "svelte";
 
 	$app.isAdmin = true;
 	/*
@@ -31,8 +32,8 @@
 
 	*/
 
-	prompt.show({
-		text: "Please enter your username",
+	onMount(() => {
+		setUsername();
 	});
 
 	// screen.show({
@@ -91,6 +92,8 @@
 	 * Toggles the settings modal
 	 */
 	function toggleSettings() {
+		if ($prompt.active) return;
+
 		$app.activeModal = $app.activeModal === "settings" ? "" : "settings";
 	}
 
@@ -111,6 +114,20 @@
 		document.body.removeChild(download);
 
 		toasts.create("Download", `Canvas saved as ${filename}`, "success", 3000);
+	}
+	/**
+	 * Sets the username if it is not already set
+	 */
+	function setUsername() {
+		if (!$username) {
+			prompt.show({
+				text: "Please enter your username",
+				fn: (value) => {
+					if (value.length < 3 || value.length > 20)
+						return "Username to short or to long";
+				},
+			});
+		}
 	}
 </script>
 
