@@ -5,11 +5,22 @@
 	export let width = 400;
 	export let title = "";
 	export let button = true;
+	export let buttonTo = null;
+	export let buttonFn = () => {};
 
 	function handleClick(event) {
+		if (buttonTo === "") {
+			$app.activeModal = "";
+			return;
+		} else if (buttonTo) {
+			$app.activeModal = buttonTo;
+			return;
+		}
 		$app.activeModal === "settings"
 			? ($app.activeModal = "")
 			: ($app.activeModal = "settings");
+
+		buttonFn();
 	}
 </script>
 
@@ -54,6 +65,7 @@
 			border-radius: var(--radius);
 			width: 100%;
 			max-width: var(--width, 300px);
+			border: var(--contour);
 		}
 		&__content {
 			max-height: 600px;

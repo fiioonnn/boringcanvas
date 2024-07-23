@@ -78,6 +78,7 @@
 		border: var(--contour);
 		border-radius: var(--radius-small);
 		user-select: none;
+		background: var(--background);
 		&__view {
 			position: absolute;
 			border-radius: var(--radius-small);

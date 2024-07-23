@@ -35,6 +35,7 @@
 		background: rgba(0, 0, 0, 0.3);
 		backdrop-filter: blur(10px);
 		min-width: 400px;
+		user-select: none;
 		ul {
 			display: grid;
 			gap: 10px;

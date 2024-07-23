@@ -2,9 +2,7 @@
 	import { username } from "#store/stores.js";
 	import { toasts } from "#store/toasts.js";
 
-	function handleSubmit(event) {
-		console.log("ok");
-	}
+	function handleSubmit(event) {}
 </script>
 
 <div class="admin-panel">

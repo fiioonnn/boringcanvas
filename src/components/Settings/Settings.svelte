@@ -5,7 +5,12 @@
 
 <div class="settings">
 	<SettingsItem text="Version" type="data" value={$app.version} />
-	<SettingsItem text="Admin" type="toggle" value={$app.isAdmin} />
+	<SettingsItem
+		text="Debug"
+		type="toggle"
+		value={$app.debug}
+		fn={() => ($app.debug = !$app.debug)}
+	/>
 	<SettingsItem text="Controls" fn={() => ($app.activeModal = "controls")} />
 	<SettingsItem text="Rules" fn={() => ($app.activeModal = "rules")} />
 	<SettingsItem text="Donate" fn={() => ($app.activeModal = "donate")} />

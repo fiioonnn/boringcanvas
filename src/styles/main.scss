@@ -41,6 +41,8 @@ body {
 	// width: 100%;
 	// height: 100%;
 	// overflow: hidden;
+
+	//Bring back in v2
 	background: url("img/void.svg") repeat left / 20px;
 }
 
@@ -264,4 +266,9 @@ label {
 ::selection {
 	background: var(--text);
 	color: #000;
+}
+
+p,
+li {
+	color: var(--text-normal);
 }

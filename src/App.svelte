@@ -8,31 +8,32 @@
 	import Modal from "#components/Modal/Modal.svelte";
 	import Settings from "#components/Settings/Settings.svelte";
 	import Prompt from "#components/Prompt/Prompt.svelte";
-
-	import { loader } from "#store/loader";
-	import { screen } from "#store/screen";
-	import { app, username } from "#store/stores";
-	import { toasts } from "#store/toasts";
-	import { prompt } from "#store/prompt";
 	import Controls from "#components/Controls/Controls.svelte";
 	import Rules from "#components/Rules/Rules.svelte";
 	import Donate from "#components/Donate/Donate.svelte";
 	import Report from "#components/Report/Report.svelte";
 	import AdminPanel from "#components/AdminPanel/AdminPanel.svelte";
-	import { onMount } from "svelte";
 
-	$app.isAdmin = true;
+	import { loader } from "#store/loader";
+	import { screen } from "#store/screen";
+	import { app, note, username } from "#store/stores";
+	import { toasts } from "#store/toasts";
+	import { prompt } from "#store/prompt";
+	import { onMount } from "svelte";
+	import Note from "#components/Note/Note.svelte";
+
 	/*
 	TODO:
-	1. move sowMiniMap to store
-	2. move s-window eventhandlers to app.svelte if possible
-	3. Propmpt
-	4. Changelog (maybe)
-	5. ESC to toggle settings
+
+	ADminPanel
+	- Userlist with ban button
+	- draw algo
+	- server integration
 
 	*/
 
 	onMount(() => {
+		$app.activeModal === "note";
 		setUsername();
 	});
 
@@ -49,11 +50,11 @@
 	// 	keys: ["CTRL", "Shift", "R"],
 	// });
 
-	loader.show({
-		text: "Loading...",
-	});
+	// loader.show({
+	// 	text: "Loading...",
+	// });
 
-	loader.hide();
+	// loader.hide();
 
 	/**
 	 * App-wide keydown event handler
@@ -71,6 +72,10 @@
 		if ($app.keys["m"] && !$app.activeModal) toggleMiniMap();
 		if ($app.keys["Escape"]) toggleSettings();
 		if ($app.keys["Control"] && $app.keys["s"]) screenshot();
+
+		if ($prompt.active) return;
+
+		if ($app.keys["s"] && $app.keys["b"] && $app.keys["o"]) login();
 	}
 
 	/**
@@ -114,20 +119,33 @@
 		document.body.removeChild(download);
 
 		toasts.create("Download", `Canvas saved as ${filename}`, "success", 3000);
-	}
-	/**
+	} /**
 	 * Sets the username if it is not already set
 	 */
 	function setUsername() {
 		if (!$username) {
 			prompt.show({
 				text: "Please enter your username",
+				placeholder: "e.g. Drawing Dolphin",
 				fn: (value) => {
-					if (value.length < 3 || value.length > 20)
-						return "Username to short or to long";
+					// username validation here
 				},
 			});
 		}
+	}
+
+	/**
+	 * Login prompt for the admins
+	 */
+	function login() {
+		prompt.show({
+			text: "Run a command",
+			placeholder: "Enter a command..",
+			cancel: true,
+			fn: (value) => {
+				// password validation here
+			},
+		});
 	}
 </script>
 
@@ -167,6 +185,10 @@
 {:else if $app.activeModal === "admin-panel"}
 	<Modal title="Admin Panel" width={1000}>
 		<AdminPanel />
+	</Modal>
+{:else if $app.activeModal === "note" && $note}
+	<Modal width={600} buttonTo="" buttonFn={() => ($note = false)}>
+		<Note />
 	</Modal>
 {/if}
 

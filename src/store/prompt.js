@@ -23,7 +23,6 @@ function createPromptStore() {
 				cancel,
 				buttonText,
 				fn,
-
 				active: true,
 			};
 			return state;
@@ -42,7 +41,6 @@ function createPromptStore() {
 					fn: (value) => {
 						return false;
 					},
-
 					active: false,
 				};
 				return state;

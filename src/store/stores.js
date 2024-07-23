@@ -79,12 +79,12 @@ export const config = writable({
 	canvas: {
 		size: [6000, 6000],
 		background: "#202020",
-		grid: {
-			enabled: true,
-			color: "#272727",
-			divisor: 100,
-			moveStep: 80,
-		},
+		// grid: {
+		// 	enabled: true,
+		// 	color: "#272727",
+		// 	divisor: 100,
+		// 	moveStep: 80,
+		// },
 	},
 	controls: [
 		{ text: "Draw", keys: ["MOUSE LEFT"] },
@@ -132,13 +132,22 @@ export const app = writable({
 	version: "1.0.0",
 	ctx: null,
 	keys: {},
-	activeModal: "",
+	activeModal: "note",
 	showMiniMap: false,
 	isAdmin: false,
+	debug: false,
 });
 
+// Username
 const storedUsername = localStorage.getItem("username") || "";
 export const username = writable(storedUsername);
 username.subscribe((value) => {
 	localStorage.setItem("username", value);
+});
+
+// Note
+const storedNote = localStorage.getItem("note") !== "true";
+export const note = writable(storedNote);
+note.subscribe((value) => {
+	localStorage.setItem("note", value.toString());
 });

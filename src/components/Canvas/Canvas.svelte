@@ -24,6 +24,7 @@
 	let transform = [0, 0];
 	// Current drawing path
 	let path = [];
+	let pathId = "";
 
 	onMount(() => {
 		ctx = canvas.getContext("2d");
@@ -44,15 +45,12 @@
 		canvas.width = $config.canvas.size[X];
 		canvas.height = $config.canvas.size[Y];
 
-		// Set canvas background
-		ctx.fillStyle = $config.canvas.background;
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		// // Set canvas background
+		// ctx.fillStyle = $config.canvas.background;
+		// ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-		// Draw grid
-		drawGrid();
-
-		// Draw logo
-		drawLogo();
+		// // Draw grid
+		// drawGrid();
 
 		// Go to center
 		transform = [
@@ -61,6 +59,9 @@
 		];
 
 		translate();
+
+		// Draw logo
+		drawLogo();
 	}
 
 	/**
@@ -118,18 +119,14 @@
 	 * @param {MouseEvent} event
 	 */
 	function handleMouseDown(event) {
-		event.button === 0 &&
-			!mouse.panning &&
-			!$tools.eraser &&
-			(mouse.drawing = true);
-		event.button === 1 &&
-			!mouse.drawing &&
-			!$tools.eraser &&
-			(mouse.panning = true);
-		event.button === 2 &&
-			!mouse.drawing &&
-			!mouse.panning &&
-			($tools.eraser = true);
+		event.button === 0 && !mouse.panning && (mouse.drawing = true);
+		event.button === 1 && !mouse.drawing && (mouse.panning = true);
+		// event.button === 2 &&
+		// 	!mouse.drawing &&
+		// 	!mouse.panning &&
+		// 	($tools.eraser = true);
+
+		mouse.drawing && (pathId = generateId(24));
 
 		mouse.pos.last = mouse.pos.canvas;
 		mouse.pos.lastWindow = [event.clientX, event.clientY];
@@ -143,13 +140,14 @@
 	function handleMouseUp(event) {
 		event.button === 0 && (mouse.drawing = false);
 		event.button === 1 && (mouse.panning = false);
-		event.button === 2 && ($tools.eraser = false);
+		// event.button === 2 && ($tools.eraser = false);
 
 		if (!mouse.drawing && !mouse.panning) {
 			mouse.pos.last = [0, 0];
 		}
 
 		// reset the path
+		pathId = "";
 		path = [];
 	}
 
@@ -163,11 +161,44 @@
 			event.clientY - transform[Y],
 		];
 
-		if (mouse.drawing) {
-			path.push(mouse.pos.canvas);
+		if (mouse.erasing) {
+			console.log(1);
+			path.push({
+				pos: mouse.pos.canvas,
+				pathId,
+				color: $tools.color,
+				size: $tools.size,
+				erase: true,
+			});
+
 			draw();
+
 			mouse.pos.last = mouse.pos.canvas;
 		}
+
+		if (mouse.drawing && $tools.eraser) {
+			path.push({
+				pos: mouse.pos.canvas,
+				pathId,
+				erase: true,
+			});
+
+			draw();
+
+			mouse.pos.last = mouse.pos.canvas;
+		} else if (mouse.drawing) {
+			path.push({
+				pos: mouse.pos.canvas,
+				pathId,
+				color: $tools.color,
+				size: $tools.size,
+			});
+
+			draw();
+
+			mouse.pos.last = mouse.pos.canvas;
+		}
+
 		if (mouse.panning) {
 			pan(event);
 		}
@@ -209,16 +240,73 @@
 	 * Draw the current path on the canvas.
 	 */
 	function draw() {
-		// simple draw logic connect all points with a line
-
+		ctx.beginPath();
 		ctx.strokeStyle = $tools.color;
 		ctx.lineWidth = $tools.size;
 		ctx.lineCap = "round";
 		ctx.lineJoin = "round";
-		ctx.beginPath();
-		ctx.moveTo(mouse.pos.last[X], mouse.pos.last[Y]);
-		ctx.lineTo(mouse.pos.canvas[X], mouse.pos.canvas[Y]);
-		ctx.stroke();
+
+		if (path.length > 0) {
+			const firstPoint = path[0];
+			ctx.moveTo(firstPoint.pos[X], firstPoint.pos[Y]);
+		}
+
+		path.forEach((point, i) => {
+			if (i === 0) {
+				ctx.beginPath();
+				ctx.globalCompositeOperation = point.erase
+					? "destination-out"
+					: "source-over";
+
+				ctx.moveTo(point.pos[X], point.pos[Y]);
+			} else {
+				const prevPoint = path[i - 1];
+				const currentPoint = point;
+				const controlPoint = [
+					(prevPoint.pos[X] + currentPoint.pos[X]) / 2,
+					(prevPoint.pos[Y] + currentPoint.pos[Y]) / 2,
+				];
+
+				ctx.quadraticCurveTo(
+					prevPoint.pos[X],
+					prevPoint.pos[Y],
+					controlPoint[X],
+					controlPoint[Y]
+				);
+			}
+			if (point.drawn) return;
+			ctx.stroke();
+
+			point.drawn = true;
+		});
+
+		// path.forEach((point, i) => {
+		// 	ctx.strokeStyle = point.color;
+		// 	ctx.lineWidth = point.size;
+		// 	ctx.lineCap = "round";
+		// 	ctx.lineJoin = "round";
+
+		// 	if (i === 0) {
+		// 		ctx.beginPath();
+
+		// 		ctx.moveTo(point.pos[X], point.pos[Y]);
+		// 	} else {
+		// 		const prevPoint = path[i - 1];
+		// 		const currentPoint = point;
+		// 		const controlPoint = [
+		// 			(prevPoint.pos[X] + currentPoint.pos[X]) / 2,
+		// 			(prevPoint.pos[Y] + currentPoint.pos[Y]) / 2,
+		// 		];
+		// 		ctx.quadraticCurveTo(
+		// 			prevPoint.pos[X],
+		// 			prevPoint.pos[Y],
+		// 			controlPoint[X],
+		// 			controlPoint[Y]
+		// 		);
+		// 	}
+		// });
+
+		// ctx.stroke();
 	}
 
 	/**
@@ -240,6 +328,9 @@
 		translate();
 	}
 
+	/**
+	 * Check if the canvas is within the window bounds.
+	 */
 	function checkBorders() {
 		const canvasBounds = canvas.getBoundingClientRect();
 
@@ -251,12 +342,21 @@
 			transform[Y] = -canvasBounds.height + window.innerHeight;
 	}
 
-	// Watch the path for changes
-	$: {
-		path.forEach((p, i) => {
-			console.log(i, p);
-			// draw();
-		});
+	/**
+	 * Generate a random id for each path.
+	 */
+	function generateId(length = 9) {
+		const characters =
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+		let result = "";
+
+		for (let i = 0; i < length; i++) {
+			result += characters.charAt(
+				Math.floor(Math.random() * characters.length)
+			);
+		}
+
+		return result;
 	}
 </script>
 
@@ -269,35 +369,50 @@
 	on:mouseleave={handleMouseLeave}
 	on:mousedown={handleMouseDown}
 	on:wheel|nonpassive={handleMouseWheel}
+	class:draggin={mouse.panning}
+	class:erasing={$tools.eraser}
 ></canvas>
 
 {#if $app.showMiniMap}
 	<MiniMap bind:source={ctx} size={400} bind:transform />
 {/if}
 
-<!-- <Debugger
-	items={{
-		"Mouse Pos": mouse.pos.canvas.join(":"),
-		"Mouse Last": mouse.pos.last,
-		"Mouse Last Window": mouse.pos.lastWindow,
-		Drawing: mouse.drawing,
-		Panning: mouse.panning,
-		Keys: Object.keys(keys)
-			.filter((key) => keys[key])
-			.join(", "),
-		Canvas: canvas,
-		Context: ctx,
-		Config: $config,
-		Tools: $tools,
-		Path: path.length,
-		"Canvas Size": [$config.canvas.size[X], $config.canvas.size[Y]].join(" x "),
-	}}
-/> -->
+{#if $app.debug}
+	<Debugger
+		items={{
+			"Mouse Pos": mouse.pos.canvas.join(":"),
+			"Mouse Last": mouse.pos.last,
+			"Mouse Last Window": mouse.pos.lastWindow,
+			Drawing: mouse.drawing,
+			Panning: mouse.panning,
+			Erasing: $tools.eraser,
+			Path: path.length,
+			PathId: pathId,
+			"Canvas Size": [$config.canvas.size[X], $config.canvas.size[Y]].join(
+				" x "
+			),
+		}}
+	/>
+{/if}
 
-<style>
+<style lang="scss">
 	.canvas {
+		background-size: 40px 40px;
+
+		background-color: var(--background);
+		background-image: radial-gradient(
+			circle,
+			#272727 2px,
+			rgba(0, 0, 0, 0) 1px
+		);
 		position: fixed;
 		top: 0;
 		left: 0;
+		&.draggin {
+			cursor: grab;
+		}
+		&.erasing {
+			cursor: crosshair;
+		}
 	}
 </style>
