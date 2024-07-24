@@ -1,15 +1,22 @@
 <script>
 	import SettingsItem from "#components/Settings/SettingsItem.svelte";
-	import { app } from "#store/stores";
+	import { app, username } from "#store/stores";
 </script>
 
 <div class="settings">
+	<SettingsItem text="Username" type="data" value={$username} />
 	<SettingsItem text="Version" type="data" value={$app.version} />
 	<SettingsItem
 		text="Debug"
 		type="toggle"
 		value={$app.debug}
 		fn={() => ($app.debug = !$app.debug)}
+	/>
+	<SettingsItem
+		text="Show serverinfo"
+		type="toggle"
+		value={$app.infobox}
+		fn={() => ($app.infobox = !$app.infobox)}
 	/>
 	<SettingsItem text="Controls" fn={() => ($app.activeModal = "controls")} />
 	<SettingsItem text="Rules" fn={() => ($app.activeModal = "rules")} />

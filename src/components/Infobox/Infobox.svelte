@@ -1,11 +1,13 @@
 <script>
 	import OnlineCount from "./OnlineCount.svelte";
 	import ServerPing from "./ServerPing.svelte";
+	import { app } from "#store/stores";
+	import { fly } from "svelte/transition";
 </script>
 
-<div class="infobox">
-	<OnlineCount count={78} />
-	<ServerPing ping={20} />
+<div class="infobox" transition:fly={{ duration: 300, y: -100 }}>
+	<OnlineCount bind:count={$app.onlineCount} />
+	<ServerPing bind:ping={$app.ping} />
 </div>
 
 <style lang="scss">

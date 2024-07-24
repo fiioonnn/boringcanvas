@@ -16,6 +16,10 @@
 		fn();
 
 		active = !active;
+
+		if (type === "color") {
+			$tools.eraser = false;
+		}
 	}
 
 	function handleWindowClick(event) {

@@ -6,7 +6,7 @@ const MAX_TOASTS = 5;
 function createToastsStore() {
 	const toasts = writable([]);
 
-	function create(title, message, type = "default", timeout = TIMEOUT) {
+	function create(title, message = "", type = "default", timeout = TIMEOUT) {
 		toasts.update((state) => {
 			if (state.length >= MAX_TOASTS) {
 				state.shift();

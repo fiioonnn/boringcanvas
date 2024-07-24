@@ -17,15 +17,15 @@
 	<ul class="donate__wallets">
 		<li>
 			Tether:
-			<span>0xB09Fd445d2F92dc79F1df3B94700C2dF389ED7b8</span>
+			<span class="selectable">0xB09Fd445d2F92dc79F1df3B94700C2dF389ED7b8</span>
 		</li>
 		<li>
 			Bitcoin:
-			<span>3BHbsm1HHCSsv9yMA6oY4sXd2Db3UzwJLu</span>
+			<span class="selectable">3BHbsm1HHCSsv9yMA6oY4sXd2Db3UzwJLu</span>
 		</li>
 		<li>
 			Litecoin:
-			<span>MQeWwsQU2ejbonPQrZqRrcZiAtDUBbdkKX</span>
+			<span class="selectable">MQeWwsQU2ejbonPQrZqRrcZiAtDUBbdkKX</span>
 		</li>
 	</ul>
 	<p class="donate__info">
@@ -69,5 +69,8 @@
 				}
 			}
 		}
+	}
+	.selectable {
+		user-select: all;
 	}
 </style>

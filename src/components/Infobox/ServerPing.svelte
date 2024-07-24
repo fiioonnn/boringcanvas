@@ -12,7 +12,9 @@
 		"#404040",
 	];
 	$: {
-		if (ping < 50) {
+		if (ping < 0) {
+			color = GREY;
+		} else if (ping < 50) {
 			color = GREEN;
 		} else if (ping < 100) {
 			color = ORANGE;
@@ -26,7 +28,7 @@
 
 <div class="server-ping">
 	<IconSignal {color} />
-	<p>{ping}ms</p>
+	<p>{Math.min(ping, 1000)}ms</p>
 </div>
 
 <style>

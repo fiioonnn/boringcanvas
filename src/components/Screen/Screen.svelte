@@ -30,10 +30,11 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 20px;
+		gap: 10px;
 		text-align: center;
 		z-index: 9999;
 		user-select: none;
+		padding: 20px;
 		&__title {
 			font-size: 32px;
 			font-weight: 700;

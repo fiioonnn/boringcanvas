@@ -9,6 +9,8 @@
 	export let buttonFn = () => {};
 
 	function handleClick(event) {
+		buttonFn();
+
 		if (buttonTo === "") {
 			$app.activeModal = "";
 			return;
@@ -19,8 +21,6 @@
 		$app.activeModal === "settings"
 			? ($app.activeModal = "")
 			: ($app.activeModal = "settings");
-
-		buttonFn();
 	}
 </script>
 
@@ -59,6 +59,7 @@
 		display: grid;
 		place-items: center;
 		padding: 20px;
+		user-select: none;
 		&__inner {
 			background: var(--foreground);
 			padding: 15px;

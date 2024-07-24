@@ -101,7 +101,7 @@
 
 		img.src = "img/logo.svg";
 		img.onload = () => {
-			ctx.globalAlpha = 0.1; // Set opacity to 0.1
+			// ctx.globalAlpha = 0.1; // Set opacity to 0.1
 			ctx.drawImage(
 				img,
 				canvas.width / 2 - width / 2,
@@ -387,7 +387,6 @@
 			Panning: mouse.panning,
 			Erasing: $tools.eraser,
 			Path: path.length,
-			PathId: pathId,
 			"Canvas Size": [$config.canvas.size[X], $config.canvas.size[Y]].join(
 				" x "
 			),

@@ -7,7 +7,10 @@
 	<div class="loader__logo">
 		<img src="img/logo.svg" alt="" />
 	</div>
-	<p class="loader__text">{$loader.text}</p>
+	<p class="loader__text">
+		{$loader.text}
+	</p>
+
 	<div class="loader__animation"></div>
 	<p class="loader__info">
 		This takes longer than usual, you can refresh the page or contact an admin
@@ -17,6 +20,7 @@
 
 <style lang="scss">
 	.loader {
+		user-select: none;
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -27,9 +31,10 @@
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		gap: 20px;
+		// gap: 20px;
 		z-index: 1000;
 		&__animation {
+			margin-top: 20px;
 			height: 5px;
 			background: var(--foreground);
 			border-radius: var(--radius);
@@ -56,6 +61,7 @@
 		}
 		&__logo {
 			max-width: 150px;
+			margin-bottom: 20px;
 		}
 		&__info {
 			position: absolute;
@@ -67,7 +73,9 @@
 			text-align: center;
 			opacity: 0;
 			animation: info 15s forwards;
+			color: var(--text);
 		}
+
 		@keyframes loader {
 			to {
 				left: 100%;

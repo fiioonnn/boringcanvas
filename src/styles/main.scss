@@ -43,7 +43,8 @@ body {
 	// overflow: hidden;
 
 	//Bring back in v2
-	background: url("img/void.svg") repeat left / 20px;
+	// background: url("img/void.svg") repeat left / 20px;
+	background: var(--background);
 }
 
 input,

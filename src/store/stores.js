@@ -132,10 +132,13 @@ export const app = writable({
 	version: "1.0.0",
 	ctx: null,
 	keys: {},
-	activeModal: "note",
+	activeModal: "",
 	showMiniMap: false,
 	isAdmin: false,
 	debug: false,
+	ping: -1,
+	onlineCount: 0,
+	infobox: false,
 });
 
 // Username
@@ -146,8 +149,11 @@ username.subscribe((value) => {
 });
 
 // Note
-const storedNote = localStorage.getItem("note") !== "true";
+const storedNote = localStorage.getItem("note") === "true";
 export const note = writable(storedNote);
 note.subscribe((value) => {
 	localStorage.setItem("note", value.toString());
 });
+
+// Socket
+export const socket = writable(null);

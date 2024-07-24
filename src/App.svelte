@@ -13,28 +13,75 @@
 	import Donate from "#components/Donate/Donate.svelte";
 	import Report from "#components/Report/Report.svelte";
 	import AdminPanel from "#components/AdminPanel/AdminPanel.svelte";
+	import Note from "#components/Note/Note.svelte";
 
 	import { loader } from "#store/loader";
 	import { screen } from "#store/screen";
-	import { app, note, username } from "#store/stores";
+	import { app, note, username, socket } from "#store/stores";
 	import { toasts } from "#store/toasts";
 	import { prompt } from "#store/prompt";
 	import { onMount } from "svelte";
-	import Note from "#components/Note/Note.svelte";
+	import { io } from "socket.io-client";
+
+	let server = "http://localhost:3000";
+
+	const client = io(server, {
+		autoConnect: false,
+		transports: ["websocket"],
+		auth: (cb) => {
+			cb({
+				username: $username,
+				version: $app.version,
+			});
+		},
+	});
+	socket.set(client);
+
+	fetch(server)
+		.then((res) => res.json())
+		.then((data) => {
+			$app.onlineCount = data.online;
+		})
+		.catch((error) => {
+			console.log(error);
+		});
 
 	/*
 	TODO:
 
 	ADminPanel
 	- Userlist with ban button
-	- draw algo
 	- server integration
-
+	- blacklist (for usernames)
+	- userlist
+	- when draw high ping. maybe draw() interval (limit it)
 	*/
 
+	loader.show({
+		text: "Loading...",
+	});
+	let pingInterval = null;
+
 	onMount(() => {
-		$app.activeModal === "note";
-		setUsername();
+		if (!$note) {
+			$app.activeModal = "note";
+		}
+
+		// Username prompt if not set, otherwise connect to the server
+		let timeout = setTimeout(() => {
+			loader.hide();
+
+			if ($username) {
+				$socket.connect();
+			} else {
+				setUsername();
+			}
+		}, 1000);
+
+		return () => {
+			$socket.disconnect();
+			clearInterval(pingInterval);
+		};
 	});
 
 	// screen.show({
@@ -50,11 +97,101 @@
 	// 	keys: ["CTRL", "Shift", "R"],
 	// });
 
-	// loader.show({
-	// 	text: "Loading...",
-	// });
-
 	// loader.hide();
+
+	$socket.on("error:banned", (message) => {
+		screen.show({
+			title: "You have been banned",
+			text: message,
+		});
+	});
+
+	$socket.on("connect", () => {
+		loader.hide();
+
+		setTimeout(() => {
+			$app.infobox = true;
+		}, 1000);
+
+		pingInterval = setInterval(() => {
+			const start = Date.now();
+
+			$socket.emit("ping", (data) => {
+				const duration = Date.now() - start;
+				const { version, online } = data;
+
+				$app.ping = duration;
+				$app.onlineCount = online;
+			});
+		}, 1000);
+	});
+
+	$socket.on("disconnect", () => {
+		clearInterval(pingInterval);
+		loader.show({
+			text: "Disconnected. Trying to reconnect..",
+		});
+	});
+
+	$socket.on(
+		"notification",
+		({ title, message = "", type = "default", duration = 3000 }) => {
+			toasts.create(title, message, type, duration);
+		}
+	);
+
+	$socket.on("action", (action) => {
+		if (action === "unlock") {
+			$app.isAdmin = true;
+		}
+
+		if (action === "lock") {
+			$app.isAdmin = false;
+		}
+
+		if (action === "ban") {
+			banned();
+		}
+	});
+
+	function banned() {
+		$socket.disconnect();
+		screen.show({
+			title: "You have been banned",
+			text: `Because you broke the rules, you were permanently banned. If you think this is a mistake or you would like to make a request to be unbanned, please contact <a href="mailto:support@boringcanvas.io">support@boringcanvas.io</a>.`,
+		});
+	}
+
+	$socket.on("connect_error", (error) => {
+		clearInterval(pingInterval);
+
+		console.log(error);
+		if (error.screen) {
+			screen.show(error.screen);
+			$socket.disconnect();
+		}
+
+		if (error.message === "banned") {
+			banned();
+		}
+
+		if (error.message === "invalid-username") {
+			loader.hide();
+			toasts.create("Error", "Invalid username", "error", 3000);
+			$username = "";
+			setTimeout(() => {
+				$socket.disconnect();
+				setUsername();
+			}, 1000);
+		}
+
+		if (error.message === "websocket error") {
+			loader.show({
+				text: `Connection failed. Retrying..`,
+				error: error.message,
+			});
+		}
+	});
 
 	/**
 	 * App-wide keydown event handler
@@ -66,16 +203,28 @@
 
 		$app.keys[event.key] = true;
 
-		if ($app.keys["Control"] && ($app.keys["+"] || $app.keys["-"]))
+		if (
+			$app.keys["Control"] &&
+			($app.keys["+"] || $app.keys["-"] || $app.keys["s"])
+		)
 			event.preventDefault();
 
-		if ($app.keys["m"] && !$app.activeModal) toggleMiniMap();
+		if (
+			$app.keys["m"] &&
+			!$app.activeModal &&
+			$socket.connected &&
+			!$prompt.active
+		) {
+			toggleMiniMap();
+		}
+
 		if ($app.keys["Escape"]) toggleSettings();
 		if ($app.keys["Control"] && $app.keys["s"]) screenshot();
 
 		if ($prompt.active) return;
 
-		if ($app.keys["s"] && $app.keys["b"] && $app.keys["o"]) login();
+		if ($app.keys["s"] && $app.keys["b"] && $app.keys["o"] && !$app.activeModal)
+			commandPrompt();
 	}
 
 	/**
@@ -106,7 +255,17 @@
 	 * Takes a screenshot of the canvas and downloads it
 	 */
 	function screenshot() {
-		const data = $app.ctx.canvas.toDataURL("image/png");
+		const offCanvas = document.createElement("canvas");
+		const offCtx = offCanvas.getContext("2d");
+
+		offCanvas.width = $app.ctx.canvas.width;
+		offCanvas.height = $app.ctx.canvas.height;
+
+		offCtx.fillStyle = "#202020";
+		offCtx.fillRect(0, 0, $app.ctx.canvas.width, $app.ctx.canvas.height);
+		offCtx.drawImage($app.ctx.canvas, 0, 0);
+
+		const data = offCtx.canvas.toDataURL("image/png");
 		const filename = `boringcanvas.io.png`;
 		const download = document.createElement("a");
 
@@ -128,7 +287,8 @@
 				text: "Please enter your username",
 				placeholder: "e.g. Drawing Dolphin",
 				fn: (value) => {
-					// username validation here
+					$username = value;
+					$socket.connect({ username: value });
 				},
 			});
 		}
@@ -137,13 +297,13 @@
 	/**
 	 * Login prompt for the admins
 	 */
-	function login() {
+	function commandPrompt() {
 		prompt.show({
 			text: "Run a command",
 			placeholder: "Enter a command..",
 			cancel: true,
 			fn: (value) => {
-				// password validation here
+				$socket.emit("command", value);
 			},
 		});
 	}
@@ -151,9 +311,14 @@
 
 <svelte:window on:keydown={handleKeyDown} on:keyup={handleKeyUp} />
 
-<Canvas />
+{#if $socket.connected}
+	<Canvas />
+{/if}
+{#if $app.infobox}
+	<Infobox />
+{/if}
+
 <Toolbar />
-<Infobox />
 <Toasts />
 
 {#if $prompt.active}
@@ -182,12 +347,12 @@
 	<Modal title="Report" width={600}>
 		<Report />
 	</Modal>
-{:else if $app.activeModal === "admin-panel"}
+{:else if $app.activeModal === "admin-panel" && $app.isAdmin}
 	<Modal title="Admin Panel" width={1000}>
 		<AdminPanel />
 	</Modal>
-{:else if $app.activeModal === "note" && $note}
-	<Modal width={600} buttonTo="" buttonFn={() => ($note = false)}>
+{:else if $app.activeModal === "note"}
+	<Modal width={600} buttonTo="" buttonFn={() => ($note = true)}>
 		<Note />
 	</Modal>
 {/if}

@@ -1,10 +1,15 @@
 <script>
 	import { slide } from "svelte/transition";
 	import { prompt } from "#store/prompt";
+	import { onMount } from "svelte";
 
 	export let value = "";
 	let input;
 	let error;
+
+	onMount(() => {
+		input.focus();
+	});
 
 	function handleSubmit() {
 		if (!value) return input.classList.add("error");

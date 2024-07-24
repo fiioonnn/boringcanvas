@@ -18,6 +18,7 @@ function createLoaderStore() {
 	function change(text) {
 		update((state) => {
 			state.text = text;
+
 			return state;
 		});
 	}
@@ -25,6 +26,7 @@ function createLoaderStore() {
 	function hide() {
 		update((state) => {
 			state.active = false;
+			state.text = "Loading.. Please wait.";
 			return state;
 		});
 	}
