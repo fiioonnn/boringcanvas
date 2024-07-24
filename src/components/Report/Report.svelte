@@ -1,8 +1,8 @@
 <script>
-	import { app } from "#store/stores.js";
-	import { toasts } from "#store/toasts.js";
+	import { app, socket } from "#store/stores.js";
 
 	let selected = "bug";
+
 	let inputs = {
 		username: null,
 		position: null,
@@ -40,12 +40,13 @@
 			inputs.message.classList.remove("error");
 		}
 
-		toasts.create(
-			"Report submitted",
-			"Thank you for your report, we will look into it as soon as possible.",
-			"success",
-			5000
-		);
+		$socket.emit("report", {
+			type: selected,
+			username: formData.get("username"),
+			position: formData.get("position"),
+			message: formData.get("message"),
+		});
+
 		$app.activeModal = null;
 	}
 </script>
@@ -83,7 +84,6 @@
 				type="text"
 				name="position"
 				placeholder="0000:0000"
-				pattern="^\d{4}:\d{4}$"
 				style="text-align: center"
 				bind:this={inputs.position}
 			/>

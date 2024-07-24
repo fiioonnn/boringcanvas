@@ -70,7 +70,7 @@
 		place-content: center;
 		position: relative;
 		&:hover:not(:has(:hover)) {
-			cursor: pointer;
+			cursor: url("img/icons/cursor-pointer.svg"), auto;
 			border-color: var(--contour-hover);
 		}
 		&:active:not(:has(:active)) {

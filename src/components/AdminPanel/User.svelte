@@ -15,7 +15,9 @@
 	<div class="user__info">
 		<p class="user__name">{username}</p>
 		<p class="user__ip">{address}</p>
-		<p class="user__id">{socketId}</p>
+		{#if socketId}
+			<p class="user__id">{socketId}</p>
+		{/if}
 	</div>
 	<div class="user__options">
 		{#if admin}
@@ -49,6 +51,11 @@
 		}
 
 		&.admin {
+			.user__ip,
+			.user__id {
+				display: none;
+			}
+
 			.user__name {
 				display: flex;
 				align-items: center;
@@ -82,6 +89,8 @@
 		}
 		&__ip {
 			margin-left: auto;
+			background: var(--blue);
+			color: var(--text);
 		}
 		&__options {
 			display: flex;

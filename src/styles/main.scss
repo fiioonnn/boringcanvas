@@ -44,6 +44,7 @@ body {
 
 	//Bring back in v2
 	// background: url("img/void.svg") repeat left / 20px;
+	cursor: url("img/icons/cursor.svg"), auto;
 	background: var(--background);
 }
 
@@ -186,14 +187,14 @@ button {
 	}
 	&.close {
 		background: var(--red);
-		cursor: pointer;
+		cursor: url("img/icons/cursor-pointer.svg"), auto;
 	}
 	&.submit {
 		background: var(--green);
-		cursor: pointer;
+		cursor: url("img/icons/cursor-pointer.svg"), auto;
 	}
 	&:hover:not(.data) {
-		cursor: pointer;
+		cursor: url("img/icons/cursor-pointer.svg"), auto;
 		border-color: var(--contour-hover);
 	}
 	&:active:not(.data) {

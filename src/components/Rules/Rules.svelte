@@ -35,7 +35,7 @@
 				margin-top: 20px;
 			}
 			a {
-				cursor: pointer;
+				cursor: url("img/icons/cursor-pointer.svg"), auto;
 			}
 		}
 		ol {

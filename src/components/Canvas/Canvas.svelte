@@ -226,6 +226,7 @@
 	 */
 	function handleMouseLeave() {
 		mouse.drawing = false;
+		$app.keys = [];
 	}
 
 	/**
@@ -366,8 +367,8 @@
 <canvas
 	class="canvas"
 	bind:this={canvas}
-	on:mouseleave={handleMouseLeave}
 	on:mousedown={handleMouseDown}
+	on:mouseleave={handleMouseLeave}
 	on:wheel|nonpassive={handleMouseWheel}
 	class:draggin={mouse.panning}
 	class:erasing={$tools.eraser}
@@ -408,7 +409,7 @@
 		top: 0;
 		left: 0;
 		&.draggin {
-			cursor: grab;
+			cursor: url("img/icons/cursor-move.svg"), auto;
 		}
 		&.erasing {
 			cursor: crosshair;

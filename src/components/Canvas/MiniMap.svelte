@@ -91,7 +91,7 @@
 			background: var(--foreground);
 			text-align: center;
 			color: var(--text-alt);
-			cursor: pointer;
+			cursor: url("img/icons/cursor-pointer.svg"), auto;
 			pointer-events: all;
 			user-select: all;
 		}
