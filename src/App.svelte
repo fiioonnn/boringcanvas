@@ -348,7 +348,7 @@
 		<Report />
 	</Modal>
 {:else if $app.activeModal === "admin-panel" && $app.isAdmin}
-	<Modal title="Admin Panel" width={1000}>
+	<Modal title="Admin Panel" width={800}>
 		<AdminPanel />
 	</Modal>
 {:else if $app.activeModal === "note"}
