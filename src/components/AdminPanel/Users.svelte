@@ -1,21 +1,21 @@
 <script>
-	import Report from "./Report.svelte";
+	import User from "./User.svelte";
 
-	export let reports = [];
+	export let users = [];
 </script>
 
-<div class="reports">
-	{#if reports.length}
-		{#each reports as report (report.id)}
-			<Report {report} />
+<div class="users">
+	{#if users.length}
+		{#each users as user (user.username)}
+			<User {user} />
 		{/each}
 	{:else}
-		<p>No reports found.</p>
+		<p>No users found.</p>
 	{/if}
 </div>
 
 <style lang="scss">
-	.reports {
+	.users {
 		display: grid;
 		gap: 15px;
 		max-height: 300px;

@@ -22,6 +22,7 @@
 	import { prompt } from "#store/prompt";
 	import { onMount } from "svelte";
 	import { io } from "socket.io-client";
+	import MobileWarning from "#components/MobileWarning/MobileWarning.svelte";
 
 	//
 	// Create the socket client
@@ -59,10 +60,30 @@
 	let pingInterval = null;
 
 	//
+	// Variable that holds the window width
+	//
+
+	let windowWidth = window.innerWidth;
+
+	//
 	// onMount lifecycle
 	//
 
 	onMount(() => {
+		//
+		// Set the window width
+		//
+
+		windowWidth = window.innerWidth;
+
+		//
+		// Check if its mobile
+		//
+
+		if (windowWidth < 768) {
+			$app.isMobile = true;
+		}
+
 		//
 		// If not already shown, show the note modal
 		//
@@ -160,7 +181,7 @@
 
 			$socket.emit("ping", (data) => {
 				const duration = Date.now() - start;
-				const { version, online } = data;
+				const { version, online, uptime } = data;
 
 				//
 				// Update the app store with the ping and online count
@@ -168,6 +189,7 @@
 
 				$app.ping = duration;
 				$app.onlineCount = online;
+				$app.serverUptime = uptime;
 			});
 		}, 1000);
 	});
@@ -452,9 +474,20 @@
 	}
 </script>
 
-<svelte:window on:keydown={handleKeyDown} on:keyup={handleKeyUp} />
+<svelte:window
+	on:keydown={handleKeyDown}
+	on:keyup={handleKeyUp}
+	on:resize={() => {
+		windowWidth = window.innerWidth;
+		$app.isMobile = windowWidth < 768;
+	}}
+/>
 
-{#if $socket.connected}
+{#if $app.isMobile}
+	<MobileWarning />
+{/if}
+
+{#if $socket.connected && !$app.isMobile}
 	<Canvas />
 {/if}
 
@@ -492,7 +525,7 @@
 		<Report />
 	</Modal>
 {:else if $app.activeModal === "admin-panel" && $app.isAdmin}
-	<Modal width={800}>
+	<Modal title="Admin Panel" width={900}>
 		<AdminPanel />
 	</Modal>
 {:else if $app.activeModal === "note"}

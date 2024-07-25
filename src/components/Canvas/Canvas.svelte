@@ -165,10 +165,9 @@
 	function drawLogo() {
 		const img = new Image();
 
-		const [width, height] = [300, 246.16];
-
-		img.src = "img/logo.svg";
-		img.onload = () => {
+		img.src = $config.canvas.logo;
+		img.onload = (e) => {
+			const { width, height } = e.target;
 			// ctx.globalAlpha = 0.1; // Set opacity to 0.1
 			ctx.drawImage(
 				img,
@@ -193,7 +192,6 @@
 
 		event.button === 0 && !mouse.panning && (mouse.drawing = true);
 		event.button === 1 && !mouse.drawing && (mouse.panning = true);
-		console.log(mouse.drawing, mouse.moving);
 
 		setTimeout(() => {
 			if (mouse.drawing && !mouse.moving) {

@@ -1,132 +1,117 @@
 <script>
-	import { slide } from "svelte/transition";
 	import { socket } from "#store/stores";
+	import { slide } from "svelte/transition";
+	export let report = {};
 
-	export let id = -1;
-	export let type;
-	export let username;
-	export let position;
-	export let message;
-	export let author_address;
-	export let author;
-	export let closed;
-	export let created_at;
-	export let fnClose = (id) => {};
-	export let fnDelete = (id) => {};
+	let active = false;
 
-	let isOpen = false;
+	function run(command) {
+		$socket.emit("command", `/${command} ${report.id}`);
+	}
 
-	created_at = new Date(created_at).toLocaleString("en-GB", {
-		day: "numeric",
-		month: "numeric",
-		year: "numeric",
-		hour: "numeric",
-		minute: "numeric",
-	});
+	function deleteReport() {
+		run("deletereport");
+	}
+
+	function closeReport() {
+		run("closereport");
+	}
+
+	function reopenReport() {
+		run("reopenreport");
+	}
 </script>
 
-<div
-	class="report"
-	class:report--closed={closed}
-	on:click|self={() => (isOpen = !isOpen)}
-	aria-hidden="true"
-	class:report--open={isOpen}
->
+<div class="report" class:report--closed={report?.closed}>
 	<div class="report__head">
-		<p class="report__title">
-			{#if type === "player"}
-				<span class="report__author">{author}</span> reported
-				<span class="report__target">{username}</span>
-			{:else if type === "drawing"}
-				<span class="report__author">{author}</span> reported a drawing at
-				<span class="report__target">{position}</span>
+		{#if report?.username}
+			<p class="report__text">
+				<span>{report?.author}</span> reported <span>{report?.username}</span>
+			</p>
+		{:else if report?.position}
+			<p class="report__text">
+				<span>{report?.author}</span> reported a position (<span>
+					{report?.position}</span
+				>)
+			</p>
+		{:else}
+			<p class="report__text">
+				<span>{report?.author}</span> reported a bug
+			</p>
+		{/if}
+		<div class="report__actions">
+			{#if active}
+				<button title="Show details" on:click={() => (active = !active)}>
+					<i class="fa-solid fa-eye"></i>
+				</button>
 			{:else}
-				<span class="report__author">{author}</span> reported a
-				<span class="report__target">{type}</span>
+				<button title="Hide details" on:click={() => (active = !active)}>
+					<i class="fa-solid fa-eye-slash"></i>
+				</button>
 			{/if}
-			{(closed && " (Closed)") || ""}
-		</p>
-		<div class="report__time">{created_at}</div>
+			{#if report?.closed}
+				<button title="Reopen report" on:click={reopenReport}>
+					<i class="fa-solid fa-rotate"></i>
+				</button>
+			{:else}
+				<button title="Close report" on:click={closeReport}>
+					<i class="fa-solid fa-circle-check"></i>
+				</button>
+			{/if}
+			<button title="aaa" on:click={deleteReport}>
+				<i class="fa-solid fa-trash"></i>
+			</button>
+		</div>
 	</div>
-	{#if isOpen}
+
+	{#if active}
 		<div class="report__body" transition:slide={{ duration: 300 }}>
-			<p class="report__message"><span>Message:</span>{message}</p>
-			<div class="report__actions">
-				<button on:click={() => (closed = true) && fnClose(id)}>Close</button>
-				<button on:click={() => fnDelete(id)}>Delete</button>
-			</div>
+			{report?.message}
 		</div>
 	{/if}
 </div>
 
 <style lang="scss">
 	.report {
-		border: var(--contour);
-		padding: 15px;
 		border-radius: var(--radius-inner);
 		background: var(--controls);
-		display: grid;
-		gap: 0;
-		transition: var(--transition-base);
-
-		&__target {
-			font-weight: 700;
-			color: var(--orange);
-		}
-		&__head {
-			display: flex;
-			justify-content: space-between;
-			gap: 15px;
-			align-items: center;
-			pointer-events: none;
-		}
-
-		&__author {
-			font-weight: 700;
-			color: var(--text);
-		}
-
-		&__time {
-			display: flex;
-			align-items: center;
-			gap: 5px;
-			font-size: 14px;
-			color: var(--text-alt);
-			&::before {
-				content: "";
-				width: 15px;
-				height: 15px;
-				background: url("img/icons/clock.svg") no-repeat center / contain;
-				opacity: 0.5;
-			}
-		}
-		&__message {
+		padding-left: 15px;
+		overflow: hidden;
+		gap: 5px;
+		&__text {
 			span {
-				display: block;
-				color: var(--text-alt);
-				font-size: 14px;
-			}
-		}
-		&__actions {
-			display: flex;
-			gap: 15px;
-			button {
-				border: 0;
-				padding: 0;
-				&:hover {
-					opacity: 0.5;
+				user-select: all;
+				font-weight: 700;
+				&:first-child {
+					color: var(--text);
+				}
+				&:last-child {
+					color: var(--red);
 				}
 			}
 		}
-		&__body {
-			display: grid;
-			gap: 15px;
+		&__head {
+			display: flex;
+			align-items: center;
 		}
-		&--open {
-			gap: 15px;
+		&__body {
+			padding-bottom: 15px;
+			font-size: 14px;
+			color: var(--text-alt);
+		}
+		&__actions {
+			display: flex;
+			margin-left: auto;
+			button {
+				border-radius: 0;
+				border: 0;
+				&:hover {
+					background: var(--buttons-hover);
+				}
+			}
 		}
 		&--closed {
-			opacity: 0.4;
+			opacity: 0.5;
 		}
 	}
 </style>

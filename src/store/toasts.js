@@ -11,33 +11,35 @@ function createToastsStore() {
 			if (state.length >= MAX_TOASTS) {
 				state.shift();
 			}
-			return [...state, { id: id(), type, title, message, timeout }];
+			const newToast = { id: id(), type, title, message, timeout };
+			startToastTimer(newToast);
+			return [...state, newToast];
 		});
 	}
 
-	const toastTimer = derived(toasts, ($toast, set) => {
-		set($toast);
-		if ($toast.length > 0 && $toast[0].timeout > 0) {
+	function startToastTimer(toast) {
+		if (toast.timeout > 0) {
 			const timer = setTimeout(() => {
 				toasts.update((state) => {
-					state.shift();
-					return state;
+					return state.filter((t) => t.id !== toast.id);
 				});
-			}, $toast[0].timeout);
-			return () => {
-				clearTimeout(timer);
-			};
+			}, toast.timeout);
+			toast.timer = timer;
 		}
-	});
+	}
 
 	function remove(id) {
 		toasts.update((state) => {
+			const toast = state.find((t) => t.id === id);
+			if (toast) {
+				clearTimeout(toast.timer);
+			}
 			return state.filter((toast) => toast.id !== id);
 		});
 	}
 
 	return {
-		subscribe: toastTimer.subscribe,
+		subscribe: toasts.subscribe,
 		create,
 		remove,
 	};

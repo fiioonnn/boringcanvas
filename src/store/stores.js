@@ -19,6 +19,7 @@ export const config = writable({
 	canvas: {
 		size: [6000, 6000],
 		background: "#202020",
+		logo: "img/logo.svg",
 	},
 	controls: [],
 	rules: {
@@ -37,7 +38,10 @@ export const app = writable({
 	ping: -1,
 	onlineCount: 0,
 	infobox: false,
+	// serverURL: "https://s1.boringcanvas.io",
 	serverURL: "http://localhost:3000",
+	serverUptime: 0,
+	isMobile: false,
 });
 
 // Username
