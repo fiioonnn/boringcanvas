@@ -26,7 +26,7 @@
 		let checkInterval = setInterval(() => {
 			const now = Date.now();
 			Object.keys(cursors).forEach((username) => {
-				if (now - cursors[username].lastmove > 1000) {
+				if (now - cursors[username].lastmove > 10000) {
 					cursors = Object.fromEntries(
 						Object.entries(cursors).filter(([key]) => key !== username)
 					);

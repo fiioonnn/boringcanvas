@@ -289,6 +289,15 @@
 				text: "This is a warning, you can now reconnect by reloading this page.",
 			});
 		}
+
+		if (action === "namechange") {
+			resetUsername("Please change your username.");
+			screen.show({
+				title: "Forced name change",
+				text: "Your username is not allowed, please change it. You can now reload this page.",
+				keys: ["CTRL", "Shift", "R"],
+			});
+		}
 	});
 
 	//

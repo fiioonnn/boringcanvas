@@ -45,18 +45,6 @@
 
 		loadCanvas();
 
-		let test = generateId();
-		for (let i = 0; i < 1000; i++) {
-			$socket.emit("draw", {
-				pos: [Math.random() * 1000, Math.random() * 1000],
-				color: "#ffffff",
-				size: 5,
-				pathId: test,
-				single: false,
-				erase: false,
-			});
-		}
-
 		//
 		// Listen for draw events
 		//
@@ -100,26 +88,18 @@
 				return res.json();
 			})
 			.then((data) => {
-				return new Promise((resolve) => {
-					const promises = data.map((point) => {
-						return new Promise((resolve) => {
-							draw({
-								pos: [point.pos[X], point.pos[Y]],
-								color: point.color,
-								size: point.size,
-								pathId: point.pathId,
-								single: point.single,
-								erase: point.erase,
-							});
-							resolve();
-						});
-					});
-
-					Promise.all(promises).then(() => {
-						loader.hide(); // Hide the loader when canvas is fully loaded
-						resolve();
+				data.forEach((point) => {
+					draw({
+						pos: [point.pos[X], point.pos[Y]],
+						color: point.color,
+						size: point.size,
+						pathId: point.pathId,
+						single: point.single === true,
+						erase: point.erase === true,
 					});
 				});
+
+				loader.hide();
 			});
 	}
 
@@ -289,6 +269,12 @@
 		}
 
 		if (mouse.drawing) {
+			path.push(mouse.pos.canvas);
+
+			// only every 5th point
+
+			if (path.length % 1 !== 0) return;
+
 			draw({
 				pos: mouse.pos.canvas,
 				color: $tools.color,

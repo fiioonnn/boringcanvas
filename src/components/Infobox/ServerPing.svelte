@@ -18,7 +18,7 @@
 			color = GREEN;
 		} else if (ping < 100) {
 			color = ORANGE;
-		} else if (ping < 200) {
+		} else if (ping < 99999) {
 			color = RED;
 		} else {
 			color = GREY;
