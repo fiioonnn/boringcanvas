@@ -38,10 +38,11 @@ export const app = writable({
 	ping: -1,
 	onlineCount: 0,
 	infobox: false,
-	// serverURL: "https://s1.boringcanvas.io",
-	serverURL: "http://localhost:3000",
+	serverURL: "https://s1.boringcanvas.io",
+	// serverURL: "http://localhost:3000",
 	serverUptime: 0,
 	isMobile: false,
+	connected: false,
 });
 
 // Username

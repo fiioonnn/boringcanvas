@@ -72,7 +72,7 @@
 			background: var(--red);
 			text-align: center;
 			opacity: 0;
-			animation: info 15s forwards;
+			animation: info 30s forwards;
 			color: var(--text);
 		}
 
@@ -86,7 +86,7 @@
 			0% {
 				opacity: 0;
 			}
-			95% {
+			97% {
 				opacity: 0;
 			}
 			100% {
