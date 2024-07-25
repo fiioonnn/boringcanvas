@@ -179,7 +179,7 @@
 					erase: $tools.eraser,
 				});
 			}
-		}, 100);
+		}, 50);
 		mouse.pos.last = mouse.pos.canvas;
 		mouse.pos.lastWindow = [event.clientX, event.clientY];
 	}
