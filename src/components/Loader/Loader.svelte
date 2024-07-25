@@ -32,7 +32,7 @@
 		justify-content: center;
 		align-items: center;
 		// gap: 20px;
-		z-index: 1000;
+		z-index: 1500;
 		&__animation {
 			margin-top: 20px;
 			height: 5px;

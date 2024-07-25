@@ -46,6 +46,7 @@ body {
 	// background: url("img/void.svg") repeat left / 20px;
 	cursor: url("img/icons/cursor.svg"), auto;
 	background: var(--background);
+	overflow: hidden;
 }
 
 input,

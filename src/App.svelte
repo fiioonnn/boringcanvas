@@ -17,12 +17,13 @@
 
 	import { loader } from "#store/loader";
 	import { screen } from "#store/screen";
-	import { app, note, username, socket, config } from "#store/stores";
+	import { app, note, username, socket, config, settings } from "#store/stores";
 	import { toasts } from "#store/toasts";
 	import { prompt } from "#store/prompt";
 	import { onMount } from "svelte";
 	import { io } from "socket.io-client";
 	import Cursors from "#components/Cursors/Cursors.svelte";
+	import CheatMenu from "#components/CheatMenu/CheatMenu.svelte";
 
 	//
 	// Create the socket client
@@ -89,13 +90,6 @@
 			})
 			.then((data) => {
 				$config = data;
-
-				toasts.create(
-					"Config loaded",
-					"The config file was successfully loaded",
-					"success",
-					3000
-				);
 			})
 			.catch((error) => {
 				if (error.message.includes("Failed to fetch")) {
@@ -356,8 +350,7 @@
 
 		if ($prompt.active) return;
 
-		if ($app.keys["s"] && $app.keys["b"] && $app.keys["o"] && !$app.activeModal)
-			commandPrompt();
+		if ($app.keys["t"] && !$app.activeModal) commandPrompt();
 	}
 
 	//
@@ -454,9 +447,10 @@
 
 <svelte:window on:keydown={handleKeyDown} on:keyup={handleKeyUp} />
 
+<CheatMenu />
+
 {#if $socket.connected}
 	<Canvas />
-	<Cursors />
 {/if}
 
 {#if $app.infobox}

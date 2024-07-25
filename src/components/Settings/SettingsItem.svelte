@@ -22,6 +22,9 @@
 	.setting-item {
 		&.data {
 			cursor: default;
+			.setting-item__value {
+				font-weight: 700;
+			}
 		}
 		&.button {
 			background: var(--buttons);

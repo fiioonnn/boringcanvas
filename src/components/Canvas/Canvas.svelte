@@ -1,9 +1,11 @@
 <script>
 	import { onMount } from "svelte";
-	import { config, tools, app } from "#store/stores";
+	import { config, tools, app, socket, settings } from "#store/stores";
+	import { prompt } from "#store/prompt";
 
 	import MiniMap from "./MiniMap.svelte";
 	import Debugger from "#components/Debug/Debugger.svelte";
+	import Cursors from "#components/Cursors/Cursors.svelte";
 
 	const [X, Y] = [0, 1];
 
@@ -14,6 +16,7 @@
 	let mouse = {
 		drawing: false,
 		panning: false,
+		moving: false,
 		pos: {
 			canvas: [0, 0],
 			last: [0, 0],
@@ -34,6 +37,34 @@
 
 		// Initialize canvas
 		initializeCanvas();
+
+		//
+		// Listen for draw events
+		//
+
+		$socket.on("draw", (data) => {
+			draw({
+				pos: [data.pos[X], data.pos[Y]],
+				color: data.color,
+				size: data.size,
+				pathId: data.pathId,
+				single: data.single === true,
+				erase: data.erase === true,
+			});
+		});
+
+		//
+		// Listen for clear event
+		//
+
+		$socket.on("clear", () => {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			drawLogo();
+		});
+
+		return () => {
+			$socket.off("draw");
+		};
 	});
 
 	/**
@@ -97,6 +128,7 @@
 	 */
 	function drawLogo() {
 		const img = new Image();
+
 		const [width, height] = [300, 246.16];
 
 		img.src = "img/logo.svg";
@@ -119,15 +151,35 @@
 	 * @param {MouseEvent} event
 	 */
 	function handleMouseDown(event) {
+		if (!mouse.drawing && !mouse.panning) {
+			pathId = generateId();
+		}
+
 		event.button === 0 && !mouse.panning && (mouse.drawing = true);
 		event.button === 1 && !mouse.drawing && (mouse.panning = true);
-		// event.button === 2 &&
-		// 	!mouse.drawing &&
-		// 	!mouse.panning &&
-		// 	($tools.eraser = true);
+		console.log(mouse.drawing, mouse.moving);
 
-		mouse.drawing && (pathId = generateId(24));
+		setTimeout(() => {
+			if (mouse.drawing && !mouse.moving) {
+				draw({
+					pos: mouse.pos.canvas,
+					color: $tools.color,
+					size: $tools.size,
+					pathId,
+					single: true,
+					erase: $tools.eraser,
+				});
 
+				$socket.emit("draw", {
+					pos: mouse.pos.canvas,
+					color: $tools.color,
+					size: $tools.size,
+					pathId,
+					single: true,
+					erase: $tools.eraser,
+				});
+			}
+		}, 100);
 		mouse.pos.last = mouse.pos.canvas;
 		mouse.pos.lastWindow = [event.clientX, event.clientY];
 	}
@@ -144,10 +196,11 @@
 
 		if (!mouse.drawing && !mouse.panning) {
 			mouse.pos.last = [0, 0];
+			pathId = "";
 		}
 
 		// reset the path
-		pathId = "";
+
 		path = [];
 	}
 
@@ -155,50 +208,49 @@
 	 * Handle mouse move event, used to draw/pan on the canvas.
 	 * @param {MouseEvent} event
 	 */
+	let test = null;
+
 	function handleMouseMove(event) {
+		mouse.move = true;
+
+		clearTimeout(test);
+		test = setTimeout(() => {
+			mouse.move = false;
+		}, 10);
+
 		mouse.pos.canvas = [
 			event.clientX - transform[X],
 			event.clientY - transform[Y],
 		];
 
-		if (mouse.erasing) {
-			console.log(1);
-			path.push({
+		if ($socket.connected) {
+			if (!mouse.panning && !$app.activeModal && !$prompt.active) {
+				$socket.emit("mouse", {
+					x: mouse.pos.canvas[X],
+					y: mouse.pos.canvas[Y],
+				});
+			}
+		}
+
+		if (mouse.drawing) {
+			draw({
 				pos: mouse.pos.canvas,
-				pathId,
 				color: $tools.color,
 				size: $tools.size,
-				erase: true,
+				pathId,
+				erase: $tools.eraser,
 			});
 
-			draw();
+			$socket.emit("draw", {
+				pos: mouse.pos.canvas,
+				color: $tools.color,
+				size: $tools.size,
+				pathId,
+				erase: $tools.eraser,
+			});
 
 			mouse.pos.last = mouse.pos.canvas;
 		}
-
-		if (mouse.drawing && $tools.eraser) {
-			path.push({
-				pos: mouse.pos.canvas,
-				pathId,
-				erase: true,
-			});
-
-			draw();
-
-			mouse.pos.last = mouse.pos.canvas;
-		} else if (mouse.drawing) {
-			path.push({
-				pos: mouse.pos.canvas,
-				pathId,
-				color: $tools.color,
-				size: $tools.size,
-			});
-
-			draw();
-
-			mouse.pos.last = mouse.pos.canvas;
-		}
-
 		if (mouse.panning) {
 			pan(event);
 		}
@@ -240,56 +292,93 @@
 	/**
 	 * Draw the current path on the canvas.
 	 */
-	function draw() {
+
+	let prevPoint;
+
+	function draw(point) {
+		if (point.erase) {
+			ctx.globalCompositeOperation = "destination-out";
+		} else {
+			ctx.globalCompositeOperation = "source-over";
+		}
+		if (point.single) {
+			ctx.beginPath();
+			ctx.arc(point.pos[X], point.pos[Y], point.size / 2, 0, 2 * Math.PI);
+			ctx.fillStyle = point.color;
+			ctx.fill();
+			return;
+		}
 		ctx.beginPath();
-		ctx.strokeStyle = $tools.color;
-		ctx.lineWidth = $tools.size;
+		ctx.strokeStyle = point.color;
+		ctx.lineWidth = point.size;
 		ctx.lineCap = "round";
 		ctx.lineJoin = "round";
 
-		if (path.length > 0) {
-			const firstPoint = path[0];
-			ctx.moveTo(firstPoint.pos[X], firstPoint.pos[Y]);
+		if (prevPoint && prevPoint.pathId === point.pathId) {
+			ctx.quadraticCurveTo(
+				prevPoint.pos[X],
+				prevPoint.pos[Y],
+				point.pos[X],
+				point.pos[Y]
+			);
+		} else {
+			ctx.moveTo(point.pos[X], point.pos[Y]);
 		}
 
-		path.forEach((point, i) => {
-			if (i === 0) {
-				ctx.beginPath();
-				ctx.globalCompositeOperation = point.erase
-					? "destination-out"
-					: "source-over";
+		ctx.stroke();
 
-				ctx.moveTo(point.pos[X], point.pos[Y]);
-			} else {
-				const prevPoint = path[i - 1];
-				const currentPoint = point;
-				const controlPoint = [
-					(prevPoint.pos[X] + currentPoint.pos[X]) / 2,
-					(prevPoint.pos[Y] + currentPoint.pos[Y]) / 2,
-				];
+		prevPoint = point;
 
-				ctx.quadraticCurveTo(
-					prevPoint.pos[X],
-					prevPoint.pos[Y],
-					controlPoint[X],
-					controlPoint[Y]
-				);
-			}
-			if (point.drawn) return;
-			ctx.stroke();
-
-			point.drawn = true;
-		});
-
+		// ctx.beginPath();
+		// ctx.strokeStyle = $tools.color;
+		// ctx.lineWidth = $tools.size;
+		// ctx.lineCap = "round";
+		// ctx.lineJoin = "round";
+		// if (path.length > 0) {
+		// 	const firstPoint = path[0];
+		// 	ctx.moveTo(firstPoint.pos[X], firstPoint.pos[Y]);
+		// }
+		// path.forEach((point, i) => {
+		// 	if (i === 0) {
+		// 		ctx.beginPath();
+		// 		ctx.globalCompositeOperation = point.erase
+		// 			? "destination-out"
+		// 			: "source-over";
+		// 		ctx.moveTo(point.pos[X], point.pos[Y]);
+		// 	} else {
+		// 		const prevPoint = path[i - 1];
+		// 		const currentPoint = point;
+		// 		const controlPoint = [
+		// 			(prevPoint.pos[X] + currentPoint.pos[X]) / 2,
+		// 			(prevPoint.pos[Y] + currentPoint.pos[Y]) / 2,
+		// 		];
+		// 		ctx.quadraticCurveTo(
+		// 			prevPoint.pos[X],
+		// 			prevPoint.pos[Y],
+		// 			controlPoint[X],
+		// 			controlPoint[Y]
+		// 		);
+		// 	}
+		// 	if (point.drawn) return;
+		// 	ctx.stroke();
+		// 	point.drawn = true;
+		// 	$socket.emit("draw", {
+		// 		pos: point.pos,
+		// 		color: point.color,
+		// 		size: point.size,
+		// 		erase: point.erase,
+		// 	});
+		// });
 		// path.forEach((point, i) => {
 		// 	ctx.strokeStyle = point.color;
 		// 	ctx.lineWidth = point.size;
 		// 	ctx.lineCap = "round";
 		// 	ctx.lineJoin = "round";
-
+		// 	ctx.globalCompositeOperation = point.erase
+		// 		? "destination-out"
+		// 		: "source-over";
 		// 	if (i === 0) {
 		// 		ctx.beginPath();
-
 		// 		ctx.moveTo(point.pos[X], point.pos[Y]);
 		// 	} else {
 		// 		const prevPoint = path[i - 1];
@@ -306,7 +395,6 @@
 		// 		);
 		// 	}
 		// });
-
 		// ctx.stroke();
 	}
 
@@ -346,9 +434,9 @@
 	/**
 	 * Generate a random id for each path.
 	 */
-	function generateId(length = 9) {
+	function generateId(length = 24) {
 		const characters =
-			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_#.!";
 		let result = "";
 
 		for (let i = 0; i < length; i++) {
@@ -386,6 +474,7 @@
 			"Mouse Last Window": mouse.pos.lastWindow,
 			Drawing: mouse.drawing,
 			Panning: mouse.panning,
+			Moving: mouse.move,
 			Erasing: $tools.eraser,
 			Path: path.length,
 			"Canvas Size": [$config.canvas.size[X], $config.canvas.size[Y]].join(
@@ -393,6 +482,10 @@
 			),
 		}}
 	/>
+{/if}
+
+{#if $settings.showCursors}
+	<Cursors bind:transform />
 {/if}
 
 <style lang="scss">

@@ -3,7 +3,7 @@ import { writable } from "svelte/store";
 // Tools
 const storedTools = JSON.parse(localStorage.getItem("tools")) || {
 	color: "#ffffff",
-	size: 1,
+	size: 5,
 	eraser: false,
 };
 export const tools = writable(storedTools);
@@ -56,3 +56,12 @@ note.subscribe((value) => {
 
 // Socket
 export const socket = writable(null);
+
+// Settings
+const storedSettings = JSON.parse(localStorage.getItem("settings")) || {
+	showCursors: true,
+};
+export const settings = writable(storedSettings);
+settings.subscribe((value) => {
+	localStorage.setItem("settings", JSON.stringify(value));
+});

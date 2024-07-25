@@ -1,6 +1,20 @@
 <script>
 	import SettingsItem from "#components/Settings/SettingsItem.svelte";
-	import { app, username } from "#store/stores";
+	import { app, username, settings } from "#store/stores";
+	import { prompt } from "#store/prompt";
+
+	function resetEverything() {
+		$app.activeModal = "";
+		prompt.show({
+			text: "Are you sure you want to delete all user settings?",
+			cancel: true,
+			input: false,
+			fn: () => {
+				localStorage.clear();
+				window.location.reload();
+			},
+		});
+	}
 </script>
 
 <div class="settings">
@@ -13,6 +27,12 @@
 		fn={() => ($app.debug = !$app.debug)}
 	/>
 	<SettingsItem
+		text="Show cursors"
+		type="toggle"
+		value={$settings.showCursors}
+		fn={() => ($settings.showCursors = !$settings.showCursors)}
+	/>
+	<SettingsItem
 		text="Show serverinfo"
 		type="toggle"
 		value={$app.infobox}
@@ -22,6 +42,7 @@
 	<SettingsItem text="Rules" fn={() => ($app.activeModal = "rules")} />
 	<SettingsItem text="Donate" fn={() => ($app.activeModal = "donate")} />
 	<SettingsItem text="Report" fn={() => ($app.activeModal = "report")} />
+	<SettingsItem text="Reset everything" fn={resetEverything} />
 	{#if $app.isAdmin}
 		<SettingsItem
 			text="Admin Panel"

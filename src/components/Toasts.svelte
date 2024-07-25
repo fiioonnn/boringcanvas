@@ -53,6 +53,7 @@
 		grid-template-columns: 60px 1fr;
 		gap: 10px;
 		padding-right: 10px;
+		z-index: 1200;
 		&__icon {
 			display: grid;
 			place-content: center;
@@ -99,6 +100,12 @@
 		&--warning {
 			.toast__icon {
 				background: var(--orange) url("img/icons/warn.svg") no-repeat center /
+					20px 20px;
+			}
+		}
+		&--broadcast {
+			.toast__icon {
+				background: var(--orange) url("img/icons/message.svg") no-repeat center /
 					20px 20px;
 			}
 		}

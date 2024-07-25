@@ -8,11 +8,11 @@
 	let error;
 
 	onMount(() => {
-		input.focus();
+		$prompt.input && input.focus();
 	});
 
 	function handleSubmit() {
-		if (!value) return input.classList.add("error");
+		if ($prompt.input && !value) return input.classList.add("error");
 
 		let err = $prompt.fn(value);
 
@@ -31,14 +31,17 @@
 	{#if error}
 		<p class="prompt__error" transition:slide={{ duration: 300 }}>{error}</p>
 	{/if}
-	<form on:submit|preventDefault={handleSubmit}>
-		<input
-			type="text"
-			bind:value
-			bind:this={input}
-			placeholder={$prompt.placeholder}
-		/>
-	</form>
+	{#if $prompt.input}
+		<form on:submit|preventDefault={handleSubmit}>
+			<input
+				type="text"
+				bind:value
+				bind:this={input}
+				placeholder={$prompt.placeholder}
+			/>
+		</form>
+	{/if}
+
 	<div class="prompt__buttons">
 		<button on:click={handleSubmit}>{$prompt.buttonText || "OK"}</button>
 		{#if $prompt.cancel}

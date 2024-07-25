@@ -5,6 +5,7 @@ function createPromptStore() {
 		text: "",
 		placeholder: "",
 		cancel: false,
+		input: true,
 		buttonText: "OK",
 		fn: (value) => {
 			return false;
@@ -14,13 +15,21 @@ function createPromptStore() {
 	});
 
 	function show(props) {
-		const { text, placeholder, cancel, buttonText, fn = () => {} } = props;
+		const {
+			text,
+			placeholder,
+			cancel,
+			input = true,
+			buttonText,
+			fn = () => {},
+		} = props;
 
 		update((state) => {
 			state = {
 				text,
 				placeholder,
 				cancel,
+				input,
 				buttonText,
 				fn,
 				active: true,
@@ -37,6 +46,7 @@ function createPromptStore() {
 					text: "",
 					placeholder: "",
 					cancel: false,
+					input: true,
 					buttonText: "OK",
 					fn: (value) => {
 						return false;

@@ -53,5 +53,6 @@
 		display: grid;
 		gap: 10px;
 		border: var(--contour);
+		z-index: 200;
 	}
 </style>
