@@ -6,6 +6,7 @@
 	import MiniMap from "./MiniMap.svelte";
 	import Debugger from "#components/Debug/Debugger.svelte";
 	import Cursors from "#components/Cursors/Cursors.svelte";
+	import { loader } from "#store/loader";
 
 	const [X, Y] = [0, 1];
 
@@ -39,6 +40,24 @@
 		initializeCanvas();
 
 		//
+		// Load canvas from server
+		//
+
+		loadCanvas();
+
+		let test = generateId();
+		for (let i = 0; i < 1000; i++) {
+			$socket.emit("draw", {
+				pos: [Math.random() * 1000, Math.random() * 1000],
+				color: "#ffffff",
+				size: 5,
+				pathId: test,
+				single: false,
+				erase: false,
+			});
+		}
+
+		//
 		// Listen for draw events
 		//
 
@@ -60,12 +79,49 @@
 		$socket.on("clear", () => {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			drawLogo();
+			loadCanvas();
 		});
 
 		return () => {
 			$socket.off("draw");
+			$socket.off("clear");
 		};
 	});
+
+	//
+	// Load canvas from server
+	//
+
+	async function loadCanvas() {
+		fetch($app.serverURL + "/canvas")
+			.then((res) => {
+				loader.show({ text: "Loading canvas..." });
+
+				return res.json();
+			})
+			.then((data) => {
+				return new Promise((resolve) => {
+					const promises = data.map((point) => {
+						return new Promise((resolve) => {
+							draw({
+								pos: [point.pos[X], point.pos[Y]],
+								color: point.color,
+								size: point.size,
+								pathId: point.pathId,
+								single: point.single,
+								erase: point.erase,
+							});
+							resolve();
+						});
+					});
+
+					Promise.all(promises).then(() => {
+						loader.hide(); // Hide the loader when canvas is fully loaded
+						resolve();
+					});
+				});
+			});
+	}
 
 	/**
 	 * Initialize canvas, used to set the size and

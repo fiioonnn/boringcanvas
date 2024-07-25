@@ -71,7 +71,9 @@
 		height: 20px;
 		pointer-events: none;
 		z-index: 100;
+		transition: opacity 0.3s ease;
 		&.outside {
+			opacity: 0.75;
 			&::before {
 				opacity: 0;
 			}

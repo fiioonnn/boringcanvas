@@ -22,8 +22,6 @@
 	import { prompt } from "#store/prompt";
 	import { onMount } from "svelte";
 	import { io } from "socket.io-client";
-	import Cursors from "#components/Cursors/Cursors.svelte";
-	import CheatMenu from "#components/CheatMenu/CheatMenu.svelte";
 
 	//
 	// Create the socket client
@@ -446,8 +444,6 @@
 </script>
 
 <svelte:window on:keydown={handleKeyDown} on:keyup={handleKeyUp} />
-
-<CheatMenu />
 
 {#if $socket.connected}
 	<Canvas />
