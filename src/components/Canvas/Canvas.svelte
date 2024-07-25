@@ -30,6 +30,9 @@
 	let path = [];
 	let pathId = "";
 
+	// Holds all paths that are currently being drawn sorted by id and then drawn (rendered)
+	const paths = {};
+
 	onMount(() => {
 		ctx = canvas.getContext("2d");
 
@@ -50,6 +53,23 @@
 		//
 
 		$socket.on("draw", (data) => {
+			// check if has pathId (if not: draw circle) (if yes: add to current pathId and draw)
+			// paths[data.pathId] = [...(paths[data.pathId] || []), data];
+			// Object.values(paths).forEach((path) => {
+			// 	ctx.beginPath();
+			// 	path.forEach((point, index) => {
+			// 		if (index === 0) {
+			// 			ctx.moveTo(point.pos[X], point.pos[Y]);
+			// 		} else {
+			// 			const prevPoint = path[index - 1];
+			// 			ctx.lineTo(point.pos[X], point.pos[Y]);
+			// 		}
+			// 	});
+			// 	ctx.stroke();
+			// });
+			// idea for removing paths that are not being drawn anymore:
+			// - send username with each point
+			// - when username starts a new pathId remove all old paths that are from the same username
 			draw({
 				pos: [data.pos[X], data.pos[Y]],
 				color: data.color,
@@ -195,25 +215,15 @@
 
 		setTimeout(() => {
 			if (mouse.drawing && !mouse.moving) {
-				draw({
-					pos: mouse.pos.canvas,
-					color: $tools.color,
-					size: $tools.size,
-					pathId,
-					single: true,
-					erase: $tools.eraser,
-				});
-
 				$socket.emit("draw", {
 					pos: mouse.pos.canvas,
 					color: $tools.color,
 					size: $tools.size,
-					pathId,
-					single: true,
 					erase: $tools.eraser,
 				});
 			}
 		}, 50);
+
 		mouse.pos.last = mouse.pos.canvas;
 		mouse.pos.lastWindow = [event.clientX, event.clientY];
 	}
@@ -267,26 +277,25 @@
 		}
 
 		if (mouse.drawing) {
-			path.push(mouse.pos.canvas);
+			// path.push(mouse.pos.canvas);
 
 			// only every 5th point
 
-			if (path.length % 1 !== 0) return;
+			// if (path.length % 1 !== 0) return;
 
-			draw({
-				pos: mouse.pos.canvas,
-				color: $tools.color,
-				size: $tools.size,
-				pathId,
-				erase: $tools.eraser,
-			});
+			// draw({
+			// 	pos: mouse.pos.canvas,
+			// 	color: $tools.color,
+			// 	size: $tools.size,
+			// 	pathId,
+			// 	erase: $tools.eraser,
+			// });
 
 			$socket.emit("draw", {
 				pos: mouse.pos.canvas,
 				color: $tools.color,
 				size: $tools.size,
 				pathId,
-				erase: $tools.eraser,
 			});
 
 			mouse.pos.last = mouse.pos.canvas;
@@ -341,13 +350,19 @@
 		} else {
 			ctx.globalCompositeOperation = "source-over";
 		}
-		if (point.single) {
+
+		//
+		// If the point is a single point, draw a circle
+		//
+
+		if (!point.pathId) {
 			ctx.beginPath();
 			ctx.arc(point.pos[X], point.pos[Y], point.size / 2, 0, 2 * Math.PI);
 			ctx.fillStyle = point.color;
 			ctx.fill();
 			return;
 		}
+
 		ctx.beginPath();
 		ctx.strokeStyle = point.color;
 		ctx.lineWidth = point.size;
@@ -355,12 +370,8 @@
 		ctx.lineJoin = "round";
 
 		if (prevPoint && prevPoint.pathId === point.pathId) {
-			ctx.quadraticCurveTo(
-				prevPoint.pos[X],
-				prevPoint.pos[Y],
-				point.pos[X],
-				point.pos[Y]
-			);
+			ctx.moveTo(prevPoint.pos[X], prevPoint.pos[Y]);
+			ctx.lineTo(point.pos[X], point.pos[Y]);
 		} else {
 			ctx.moveTo(point.pos[X], point.pos[Y]);
 		}
