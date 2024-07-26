@@ -54,42 +54,8 @@
 		//
 		const pathIds = {};
 		$socket.on("draw", (data) => {
-			if (!paths[data.pathId]) {
-				paths[data.pathId] = [];
-			}
-
-			paths[data.pathId].push(data);
-
-			// Draw all points in the path
-			paths[data.pathId].forEach((point, index) => {
-				if (index === 0) {
-					// If it's the first point, just draw a circle
-					drawCircle(point);
-				} else {
-					// Otherwise, draw a line from the previous point to the current point
-					const prevPoint = paths[data.pathId][index - 1];
-					drawLine(prevPoint, point);
-				}
-			});
+			preDrawLogicMLG(data);
 		});
-
-		function drawCircle(point) {
-			ctx.beginPath();
-			ctx.arc(point.pos[X], point.pos[Y], point.size / 2, 0, 2 * Math.PI);
-			ctx.fillStyle = point.color;
-			ctx.fill();
-		}
-
-		function drawLine(prevPoint, point) {
-			ctx.beginPath();
-			ctx.strokeStyle = point.color;
-			ctx.lineWidth = point.size;
-			ctx.lineCap = "round";
-			ctx.lineJoin = "round";
-			ctx.moveTo(prevPoint.pos[X], prevPoint.pos[Y]);
-			ctx.lineTo(point.pos[X], point.pos[Y]);
-			ctx.stroke();
-		}
 
 		//
 		// Listen for clear event
@@ -107,6 +73,45 @@
 		};
 	});
 
+	function drawCircle(point) {
+		ctx.beginPath();
+		ctx.arc(point.pos[X], point.pos[Y], point.size / 2, 0, 2 * Math.PI);
+		ctx.fillStyle = point.color;
+		ctx.fill();
+	}
+
+	function drawLine(prevPoint, point) {
+		ctx.beginPath();
+		ctx.strokeStyle = point.color;
+		ctx.lineWidth = point.size;
+		ctx.lineCap = "round";
+		ctx.lineJoin = "round";
+		ctx.moveTo(prevPoint.pos[X], prevPoint.pos[Y]);
+		ctx.lineTo(point.pos[X], point.pos[Y]);
+		ctx.stroke();
+	}
+	function preDrawLogicMLG(data) {
+		if (!paths[data.pathId]) {
+			paths[data.pathId] = [];
+		}
+
+		paths[data.pathId].push(data);
+
+		// Draw all points in the path
+		Object.values(paths).forEach((path) => {
+			path.forEach((point, index) => {
+				if (index === 0) {
+					// If it's the first point, just draw a circle
+					drawCircle(point);
+				} else {
+					// Otherwise, draw a line from the previous point to the current point
+					const prevPoint = path[index - 1];
+					drawLine(prevPoint, point);
+				}
+			});
+		});
+	}
+
 	//
 	// Load canvas from server
 	//
@@ -120,14 +125,7 @@
 			})
 			.then((data) => {
 				data.forEach((point) => {
-					draw({
-						pos: [point.pos[X], point.pos[Y]],
-						color: point.color,
-						size: point.size,
-						pathId: point.pathId,
-						single: point.single === true,
-						erase: point.erase === true,
-					});
+					preDrawLogicMLG(point);
 				});
 
 				loader.hide();
