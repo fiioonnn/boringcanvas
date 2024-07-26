@@ -23,6 +23,7 @@
 	import { onMount } from "svelte";
 	import { io } from "socket.io-client";
 	import MobileWarning from "#components/MobileWarning/MobileWarning.svelte";
+	import ModMenu from "#components/ModMenu/ModMenu.svelte";
 
 	//
 	// Create the socket client
@@ -521,6 +522,10 @@
 		<Donate />
 	</Modal>
 {:else if $app.activeModal === "report"}
+	<Modal title="Report" width={600}>
+		<Report />
+	</Modal>
+{:else if $app.activeModal === "admin-panel" && $app.isAdmin}
 	<Modal title="Report" width={600}>
 		<Report />
 	</Modal>

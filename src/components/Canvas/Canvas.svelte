@@ -52,6 +52,8 @@
 		// Listen for draw events
 		//
 
+		let buffer = [];
+
 		$socket.on("draw", (data) => {
 			// check if has pathId (if not: draw circle) (if yes: add to current pathId and draw)
 			// paths[data.pathId] = [...(paths[data.pathId] || []), data];
@@ -70,14 +72,41 @@
 			// idea for removing paths that are not being drawn anymore:
 			// - send username with each point
 			// - when username starts a new pathId remove all old paths that are from the same username
-			draw({
-				pos: [data.pos[X], data.pos[Y]],
-				color: data.color,
-				size: data.size,
-				pathId: data.pathId,
-				single: data.single === true,
-				erase: data.erase === true,
-			});
+
+			buffer.push(data);
+
+			if (buffer.length > 10) {
+				buffer.sort((a, b) => a.pathId.localeCompare(b.pathId));
+				const paths = buffer.reduce((acc, point) => {
+					if (!acc[point.pathId]) {
+						acc[point.pathId] = [];
+					}
+					acc[point.pathId].push(point);
+					return acc;
+				}, {});
+
+				Object.values(paths).forEach((path) => {
+					ctx.beginPath();
+					path.forEach((point, index) => {
+						if (index === 0) {
+							ctx.moveTo(point.pos[X], point.pos[Y]);
+						} else {
+							const prevPoint = path[index - 1];
+							ctx.lineTo(point.pos[X], point.pos[Y]);
+						}
+					});
+					ctx.stroke();
+				});
+			}
+
+			// draw({
+			// 	pos: [data.pos[X], data.pos[Y]],
+			// 	color: data.color,
+			// 	size: data.size,
+			// 	pathId: data.pathId,
+			// 	single: data.single === true,
+			// 	erase: data.erase === true,
+			// });
 		});
 
 		//
@@ -221,6 +250,13 @@
 					size: $tools.size,
 					erase: $tools.eraser,
 				});
+
+				draw({
+					pos: mouse.pos.canvas,
+					color: $tools.color,
+					size: $tools.size,
+					erase: $tools.eraser,
+				});
 			}
 		}, 50);
 
@@ -283,19 +319,20 @@
 
 			// if (path.length % 1 !== 0) return;
 
-			// draw({
-			// 	pos: mouse.pos.canvas,
-			// 	color: $tools.color,
-			// 	size: $tools.size,
-			// 	pathId,
-			// 	erase: $tools.eraser,
-			// });
+			draw({
+				pos: mouse.pos.canvas,
+				color: $tools.color,
+				size: $tools.size,
+				pathId,
+				erase: $tools.eraser,
+			});
 
 			$socket.emit("draw", {
 				pos: mouse.pos.canvas,
 				color: $tools.color,
 				size: $tools.size,
 				pathId,
+				eraser: $tools.eraser,
 			});
 
 			mouse.pos.last = mouse.pos.canvas;
