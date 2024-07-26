@@ -100,13 +100,16 @@
 		// Draw all points in the path
 		Object.values(paths).forEach((path) => {
 			path.forEach((point, index) => {
-				if (index === 0) {
-					// If it's the first point, just draw a circle
-					drawCircle(point);
-				} else {
-					// Otherwise, draw a line from the previous point to the current point
-					const prevPoint = path[index - 1];
-					drawLine(prevPoint, point);
+				if (!point.drawn) {
+					if (index === 0) {
+						// If it's the first point, just draw a circle
+						drawCircle(point);
+					} else {
+						// Otherwise, draw a line from the previous point to the current point
+						const prevPoint = path[index - 1];
+						drawLine(prevPoint, point);
+					}
+					point.drawn = true;
 				}
 			});
 		});
@@ -197,7 +200,7 @@
 		img.src = $config.canvas.logo;
 		img.onload = (e) => {
 			const { width, height } = e.target;
-			// ctx.globalAlpha = 0.1; // Set opacity to 0.1
+			ctx.globalAlpha = 0.1; // Set opacity to 0.1
 			ctx.drawImage(
 				img,
 				canvas.width / 2 - width / 2,
