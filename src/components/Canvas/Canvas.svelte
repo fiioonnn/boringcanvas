@@ -76,10 +76,23 @@
 			buffer.push(data);
 
 			if (buffer.length > 10) {
-				buffer.sort((a, b) => a.pathId.localeCompare(b.pathId));
+				buffer.sort((a, b) => a.pathId?.localeCompare(b?.pathId));
 
 				buffer.shift();
 			}
+
+			buffer.forEach((point) => {
+				draw({
+					pos: [point.pos[X], point.pos[Y]],
+					color: point.color,
+					size: point.size,
+					pathId: point.pathId,
+					single: point.single === true,
+					erase: point.erase === true,
+				});
+			});
+
+			console.log(buffer);
 
 			// if (buffer.length > 10) {
 			// 	buffer.sort((a, b) => a.pathId.localeCompare(b.pathId));
