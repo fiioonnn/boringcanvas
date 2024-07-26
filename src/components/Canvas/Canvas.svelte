@@ -57,6 +57,16 @@
 			preDrawLogicMLG(data);
 		});
 
+		// for (let i = 0; i < 10000; i++) {
+		// 	$socket.emit("draw", {
+		// 		pos: [Math.random() * 1000, Math.random() * 1000],
+		// 		color: "#ffffff",
+		// 		size: 5,
+		// 		erase: false,
+		// 		pathId: "test",
+		// 	});
+		// }
+
 		//
 		// Listen for clear event
 		//
@@ -75,27 +85,37 @@
 
 	function drawCircle(point) {
 		ctx.beginPath();
-		ctx.arc(point.pos[X], point.pos[Y], point.size / 2, 0, 2 * Math.PI);
-		ctx.fillStyle = point.color;
+		if (point.e) {
+			ctx.globalCompositeOperation = "destination-out";
+		} else {
+			ctx.globalCompositeOperation = "source-over";
+		}
+		ctx.arc(point.p[X], point.p[Y], point.s / 2, 0, 2 * Math.PI);
+		ctx.fillStyle = point.c;
 		ctx.fill();
 	}
 
 	function drawLine(prevPoint, point) {
 		ctx.beginPath();
-		ctx.strokeStyle = point.color;
-		ctx.lineWidth = point.size;
+		if (point.e) {
+			ctx.globalCompositeOperation = "destination-out";
+		} else {
+			ctx.globalCompositeOperation = "source-over";
+		}
+		ctx.strokeStyle = point.c;
+		ctx.lineWidth = point.s;
 		ctx.lineCap = "round";
 		ctx.lineJoin = "round";
-		ctx.moveTo(prevPoint.pos[X], prevPoint.pos[Y]);
-		ctx.lineTo(point.pos[X], point.pos[Y]);
+		ctx.moveTo(prevPoint.p[X], prevPoint.p[Y]);
+		ctx.lineTo(point.p[X], point.p[Y]);
 		ctx.stroke();
 	}
 	function preDrawLogicMLG(data) {
-		if (!paths[data.pathId]) {
-			paths[data.pathId] = [];
+		if (!paths[data.pI]) {
+			paths[data.pI] = [];
 		}
 
-		paths[data.pathId].push(data);
+		paths[data.pI].push(data);
 
 		// Draw all points in the path
 		Object.values(paths).forEach((path) => {
@@ -107,6 +127,7 @@
 					} else {
 						// Otherwise, draw a line from the previous point to the current point
 						const prevPoint = path[index - 1];
+
 						drawLine(prevPoint, point);
 					}
 					point.drawn = true;
@@ -228,17 +249,19 @@
 		setTimeout(() => {
 			if (mouse.drawing && !mouse.moving) {
 				$socket.emit("draw", {
-					pos: mouse.pos.canvas,
-					color: $tools.color,
-					size: $tools.size,
-					erase: $tools.eraser,
+					p: mouse.pos.canvas,
+					c: $tools.color,
+					s: $tools.size,
+					pI: pathId,
+					e: $tools.eraser,
 				});
 
-				draw({
-					pos: mouse.pos.canvas,
-					color: $tools.color,
-					size: $tools.size,
-					erase: $tools.eraser,
+				preDrawLogicMLG({
+					p: mouse.pos.canvas,
+					c: $tools.color,
+					s: $tools.size,
+					pI: pathId,
+					e: $tools.eraser,
 				});
 			}
 		}, 50);
@@ -274,9 +297,14 @@
 	let test = null;
 
 	function handleMouseMove(event) {
+		//
+		// Set mouse move to true
+		//
+
 		mouse.move = true;
 
 		clearTimeout(test);
+
 		test = setTimeout(() => {
 			mouse.move = false;
 		}, 10);
@@ -285,6 +313,10 @@
 			event.clientX - transform[X],
 			event.clientY - transform[Y],
 		];
+
+		//
+		// If connected, send mouse position to server
+		//
 
 		if ($socket.connected) {
 			if (!mouse.panning && !$app.activeModal && !$prompt.active) {
@@ -295,31 +327,40 @@
 			}
 		}
 
+		//
+		// Drawing
+		//
+
 		if (mouse.drawing) {
-			path.push(mouse.pos.canvas);
+			path.push(1);
 
 			// only every 5th point
 
-			// if (path.length % 1 !== 0) return;
+			// if (path.length % 2 !== 0) return;
 
-			draw({
-				pos: mouse.pos.canvas,
-				color: $tools.color,
-				size: $tools.size,
-				pathId,
-				erase: $tools.eraser,
+			preDrawLogicMLG({
+				p: mouse.pos.canvas,
+				c: $tools.color,
+				s: $tools.size,
+				pI: pathId,
+				e: $tools.eraser,
 			});
 
 			$socket.emit("draw", {
-				pos: mouse.pos.canvas,
-				color: $tools.color,
-				size: $tools.size,
-				pathId,
-				eraser: $tools.eraser,
+				p: mouse.pos.canvas,
+				c: $tools.color,
+				s: $tools.size,
+				pI: pathId,
+				e: $tools.eraser,
 			});
 
 			mouse.pos.last = mouse.pos.canvas;
 		}
+
+		//
+		// Panning
+		//
+
 		if (mouse.panning) {
 			pan(event);
 		}
@@ -375,25 +416,25 @@
 		// If the point is a single point, draw a circle
 		//
 
-		if (!point.pathId) {
+		if (!point.pI) {
 			ctx.beginPath();
-			ctx.arc(point.pos[X], point.pos[Y], point.size / 2, 0, 2 * Math.PI);
-			ctx.fillStyle = point.color;
+			ctx.arc(point.p[X], point.p[Y], point.s / 2, 0, 2 * Math.PI);
+			ctx.fillStyle = point.c;
 			ctx.fill();
 			return;
 		}
 
 		ctx.beginPath();
-		ctx.strokeStyle = point.color;
-		ctx.lineWidth = point.size;
+		ctx.strokeStyle = point.c;
+		ctx.lineWidth = point.s;
 		ctx.lineCap = "round";
 		ctx.lineJoin = "round";
 
-		if (prevPoint && prevPoint.pathId === point.pathId) {
-			ctx.moveTo(prevPoint.pos[X], prevPoint.pos[Y]);
-			ctx.lineTo(point.pos[X], point.pos[Y]);
+		if (prevPoint && prevPoint.pI === point.pI) {
+			ctx.moveTo(prevPoint.p[X], prevPoint.p[Y]);
+			ctx.lineTo(point.p[X], point.p[Y]);
 		} else {
-			ctx.moveTo(point.pos[X], point.pos[Y]);
+			ctx.moveTo(point.p[X], point.p[Y]);
 		}
 
 		ctx.stroke();

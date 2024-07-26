@@ -17,11 +17,26 @@
 			},
 		});
 	}
+
+	function changeServer() {
+		$app.activeModal = "";
+		prompt.show({
+			text: "Change server",
+			placeholder: "Enter server name..",
+			cancel: true,
+			fn: (server) => {
+				$socket.disconnect();
+				$app.serverURL = server;
+				$socket.connect();
+			},
+		});
+	}
 </script>
 
 <div class="actions">
 	<button on:click={() => run("clear")}>Clear canvas</button>
 	<button on:click={broadcast}>Broadcast</button>
+	<button on:click={changeServer}>Change server</button>
 </div>
 
 <style lang="scss">

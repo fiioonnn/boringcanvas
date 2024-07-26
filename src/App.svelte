@@ -506,7 +506,7 @@
 {/if}
 
 {#if $app.activeModal === "settings"}
-	<Modal title="Settings">
+	<Modal title="Settings" width={500}>
 		<Settings />
 	</Modal>
 {:else if $app.activeModal === "controls"}
@@ -525,7 +525,7 @@
 	<Modal title="Report" width={600}>
 		<Report />
 	</Modal>
-{:else if $app.activeModal === "admin-panel" && $app.isAdmin}
+{:else if $app.activeModal === "report" && $app.isAdmin}
 	<Modal title="Report" width={600}>
 		<Report />
 	</Modal>

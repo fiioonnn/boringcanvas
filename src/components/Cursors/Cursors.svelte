@@ -6,20 +6,15 @@
 
 	export let transform;
 
-	let cursors = {};
 	const [X, Y] = [0, 1];
+
+	let cursors = {};
 
 	onMount(() => {
 		$socket.on("mouse", (data) => {
 			cursors[data.username] = data;
 			cursors[data.username].lastmove = Date.now();
-			cursors[data.username].isInView = () => {
-				const x = cursors[data.username].x + transform[X];
-				const y = cursors[data.username].y + transform[Y];
-				return (
-					x >= 0 && x <= window.innerWidth && y >= 0 && y <= window.innerHeight
-				);
-			};
+			cursors[data.username].isInView = () => isInView(data.username);
 		});
 
 		// This could be a big performance problem
@@ -40,7 +35,24 @@
 			clearInterval(checkInterval);
 		};
 	});
+
+	function isInView(username) {
+		const x = cursors[username].x + transform[X];
+		const y = cursors[username].y + transform[Y];
+		return (
+			x >= 0 && x <= window.innerWidth && y >= 0 && y <= window.innerHeight
+		);
+	}
+
+	function handleMouseMove() {
+		// check if all mouses are in view if not add a class to the cursor
+		Object.keys(cursors).forEach((username) => {
+			cursors[username].isInView = () => isInView(username);
+		});
+	}
 </script>
+
+<svelte:window on:mousemove={handleMouseMove} />
 
 {#each Object.values(cursors) as cursor}
 	<div

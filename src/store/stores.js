@@ -39,7 +39,7 @@ export const app = writable({
 	onlineCount: 0,
 	infobox: false,
 	serverURL: "https://s1.boringcanvas.io",
-	// serverURL: "http://localhost:3000",
+	// serverURL: "http://localhost:4000",
 	serverUptime: 0,
 	isMobile: false,
 	connected: false,

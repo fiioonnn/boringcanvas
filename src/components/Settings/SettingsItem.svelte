@@ -22,12 +22,15 @@
 	.setting-item {
 		&.data {
 			cursor: default;
+			color: var(--text-alt);
 			.setting-item__value {
-				font-weight: 700;
+				font-weight: 600;
+				color: var(--text);
 			}
 		}
 		&.button {
 			background: var(--buttons);
+			border: var(--contour);
 		}
 		&.data,
 		&.toggle {

@@ -81,6 +81,7 @@
 			margin-bottom: 10px;
 		}
 		button.close {
+			background: var(--red);
 			margin-top: 15px;
 		}
 	}
