@@ -7,6 +7,7 @@
 	import Debugger from "#components/Debug/Debugger.svelte";
 	import Cursors from "#components/Cursors/Cursors.svelte";
 	import { loader } from "#store/loader";
+	import Actions from "#components/AdminPanel/Actions.svelte";
 
 	const [X, Y] = [0, 1];
 
@@ -53,23 +54,42 @@
 		//
 		const pathIds = {};
 		$socket.on("draw", (data) => {
-			pathIds[data.pathId] = data;
-			// if any pathId in pathIds contains the data.username but the pathId is different, remove the pathId
-			Object.keys(pathIds).forEach((pathId) => {
-				if (
-					pathIds[pathId].username === data.username &&
-					pathId !== data.pathId
-				) {
-					delete pathIds[pathId];
+			if (!paths[data.pathId]) {
+				paths[data.pathId] = [];
+			}
+
+			paths[data.pathId].push(data);
+
+			// Draw all points in the path
+			paths[data.pathId].forEach((point, index) => {
+				if (index === 0) {
+					// If it's the first point, just draw a circle
+					drawCircle(point);
+				} else {
+					// Otherwise, draw a line from the previous point to the current point
+					const prevPoint = paths[data.pathId][index - 1];
+					drawLine(prevPoint, point);
 				}
 			});
-
-			Object.values(pathIds).forEach((point) => {
-				draw(point);
-			});
-
-			console.log(pathIds);
 		});
+
+		function drawCircle(point) {
+			ctx.beginPath();
+			ctx.arc(point.pos[X], point.pos[Y], point.size / 2, 0, 2 * Math.PI);
+			ctx.fillStyle = point.color;
+			ctx.fill();
+		}
+
+		function drawLine(prevPoint, point) {
+			ctx.beginPath();
+			ctx.strokeStyle = point.color;
+			ctx.lineWidth = point.size;
+			ctx.lineCap = "round";
+			ctx.lineJoin = "round";
+			ctx.moveTo(prevPoint.pos[X], prevPoint.pos[Y]);
+			ctx.lineTo(point.pos[X], point.pos[Y]);
+			ctx.stroke();
+		}
 
 		//
 		// Listen for clear event
