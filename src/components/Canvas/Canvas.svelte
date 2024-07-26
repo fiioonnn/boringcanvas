@@ -51,84 +51,24 @@
 		//
 		// Listen for draw events
 		//
-
-		let buffer = [];
-
+		const pathIds = {};
 		$socket.on("draw", (data) => {
-			// check if has pathId (if not: draw circle) (if yes: add to current pathId and draw)
-			// paths[data.pathId] = [...(paths[data.pathId] || []), data];
-			// Object.values(paths).forEach((path) => {
-			// 	ctx.beginPath();
-			// 	path.forEach((point, index) => {
-			// 		if (index === 0) {
-			// 			ctx.moveTo(point.pos[X], point.pos[Y]);
-			// 		} else {
-			// 			const prevPoint = path[index - 1];
-			// 			ctx.lineTo(point.pos[X], point.pos[Y]);
-			// 		}
-			// 	});
-			// 	ctx.stroke();
-			// });
-			// idea for removing paths that are not being drawn anymore:
-			// - send username with each point
-			// - when username starts a new pathId remove all old paths that are from the same username
+			pathIds[data.pathId] = data;
+			// if any pathId in pathIds contains the data.username but the pathId is different, remove the pathId
+			Object.keys(pathIds).forEach((pathId) => {
+				if (
+					pathIds[pathId].username === data.username &&
+					pathId !== data.pathId
+				) {
+					delete pathIds[pathId];
+				}
+			});
 
-			if (buffer.length > 10) {
-				buffer.sort((a, b) => a.pathId.localeCompare(b.pathId));
-				const paths = buffer.reduce((acc, point) => {
-					if (!acc[point.pathId]) {
-						acc[point.pathId] = [];
-					}
-					acc[point.pathId].push(point);
-					return acc;
-				}, {});
+			Object.values(pathIds).forEach((point) => {
+				draw(point);
+			});
 
-				Object.values(paths).forEach((path) => {
-					ctx.beginPath();
-					path.forEach((point, index) => {
-						if (index === 0) {
-							ctx.moveTo(point.pos[X], point.pos[Y]);
-						} else {
-							const prevPoint = path[index - 1];
-							ctx.lineTo(point.pos[X], point.pos[Y]);
-						}
-					});
-					ctx.stroke();
-				});
-			}
-
-			// if (buffer.length > 10) {
-			// 	buffer.sort((a, b) => a.pathId.localeCompare(b.pathId));
-			// 	const paths = buffer.reduce((acc, point) => {
-			// 		if (!acc[point.pathId]) {
-			// 			acc[point.pathId] = [];
-			// 		}
-			// 		acc[point.pathId].push(point);
-			// 		return acc;
-			// 	}, {});
-
-			// 	Object.values(paths).forEach((path) => {
-			// 		ctx.beginPath();
-			// 		path.forEach((point, index) => {
-			// 			if (index === 0) {
-			// 				ctx.moveTo(point.pos[X], point.pos[Y]);
-			// 			} else {
-			// 				const prevPoint = path[index - 1];
-			// 				ctx.lineTo(point.pos[X], point.pos[Y]);
-			// 			}
-			// 		});
-			// 		ctx.stroke();
-			// 	});
-			// }
-
-			// draw({
-			// 	pos: [data.pos[X], data.pos[Y]],
-			// 	color: data.color,
-			// 	size: data.size,
-			// 	pathId: data.pathId,
-			// 	single: data.single === true,
-			// 	erase: data.erase === true,
-			// });
+			console.log(pathIds);
 		});
 
 		//
