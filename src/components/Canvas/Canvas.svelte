@@ -77,27 +77,33 @@
 
 			if (buffer.length > 10) {
 				buffer.sort((a, b) => a.pathId.localeCompare(b.pathId));
-				const paths = buffer.reduce((acc, point) => {
-					if (!acc[point.pathId]) {
-						acc[point.pathId] = [];
-					}
-					acc[point.pathId].push(point);
-					return acc;
-				}, {});
 
-				Object.values(paths).forEach((path) => {
-					ctx.beginPath();
-					path.forEach((point, index) => {
-						if (index === 0) {
-							ctx.moveTo(point.pos[X], point.pos[Y]);
-						} else {
-							const prevPoint = path[index - 1];
-							ctx.lineTo(point.pos[X], point.pos[Y]);
-						}
-					});
-					ctx.stroke();
-				});
+				buffer.shift();
 			}
+
+			// if (buffer.length > 10) {
+			// 	buffer.sort((a, b) => a.pathId.localeCompare(b.pathId));
+			// 	const paths = buffer.reduce((acc, point) => {
+			// 		if (!acc[point.pathId]) {
+			// 			acc[point.pathId] = [];
+			// 		}
+			// 		acc[point.pathId].push(point);
+			// 		return acc;
+			// 	}, {});
+
+			// 	Object.values(paths).forEach((path) => {
+			// 		ctx.beginPath();
+			// 		path.forEach((point, index) => {
+			// 			if (index === 0) {
+			// 				ctx.moveTo(point.pos[X], point.pos[Y]);
+			// 			} else {
+			// 				const prevPoint = path[index - 1];
+			// 				ctx.lineTo(point.pos[X], point.pos[Y]);
+			// 			}
+			// 		});
+			// 		ctx.stroke();
+			// 	});
+			// }
 
 			// draw({
 			// 	pos: [data.pos[X], data.pos[Y]],
@@ -313,7 +319,7 @@
 		}
 
 		if (mouse.drawing) {
-			// path.push(mouse.pos.canvas);
+			path.push(mouse.pos.canvas);
 
 			// only every 5th point
 
@@ -565,6 +571,8 @@
 			Moving: mouse.move,
 			Erasing: $tools.eraser,
 			Path: path.length,
+			PathId: pathId,
+			"Path length": Object.keys(paths).length,
 			"Canvas Size": [$config.canvas.size[X], $config.canvas.size[Y]].join(
 				" x "
 			),
