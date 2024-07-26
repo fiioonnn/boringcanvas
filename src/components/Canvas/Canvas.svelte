@@ -73,26 +73,29 @@
 			// - send username with each point
 			// - when username starts a new pathId remove all old paths that are from the same username
 
-			buffer.push(data);
-
 			if (buffer.length > 10) {
-				buffer.sort((a, b) => a.pathId?.localeCompare(b?.pathId));
+				buffer.sort((a, b) => a.pathId.localeCompare(b.pathId));
+				const paths = buffer.reduce((acc, point) => {
+					if (!acc[point.pathId]) {
+						acc[point.pathId] = [];
+					}
+					acc[point.pathId].push(point);
+					return acc;
+				}, {});
 
-				buffer.shift();
-			}
-
-			buffer.forEach((point) => {
-				draw({
-					pos: [point.pos[X], point.pos[Y]],
-					color: point.color,
-					size: point.size,
-					pathId: point.pathId,
-					single: point.single === true,
-					erase: point.erase === true,
+				Object.values(paths).forEach((path) => {
+					ctx.beginPath();
+					path.forEach((point, index) => {
+						if (index === 0) {
+							ctx.moveTo(point.pos[X], point.pos[Y]);
+						} else {
+							const prevPoint = path[index - 1];
+							ctx.lineTo(point.pos[X], point.pos[Y]);
+						}
+					});
+					ctx.stroke();
 				});
-			});
-
-			console.log(buffer);
+			}
 
 			// if (buffer.length > 10) {
 			// 	buffer.sort((a, b) => a.pathId.localeCompare(b.pathId));
