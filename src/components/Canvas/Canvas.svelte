@@ -114,7 +114,7 @@
 		if (!paths[data.pI]) {
 			paths[data.pI] = [];
 		}
-
+		console.log(data);
 		paths[data.pI].push(data);
 
 		// Draw all points in the path
@@ -336,7 +336,7 @@
 
 			// only every 5th point
 
-			// if (path.length % 2 !== 0) return;
+			if (path.length % 3 !== 0) return;
 
 			preDrawLogicMLG({
 				p: mouse.pos.canvas,

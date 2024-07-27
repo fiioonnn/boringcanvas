@@ -1,10 +1,13 @@
 <script>
+	import { fade } from "svelte/transition";
 	export let active;
 </script>
 
-<div class="toolbar-submenu" class:active>
-	<slot />
-</div>
+{#if active}
+	<div class="toolbar-submenu" class:active transition:fade={{ duration: 150 }}>
+		<slot />
+	</div>
+{/if}
 
 <style lang="scss">
 	.toolbar-submenu {
@@ -16,7 +19,7 @@
 		border-radius: var(--radius);
 		background: var(--foreground);
 		box-shadow: var(--shadow);
-		display: none;
+		display: grid;
 		grid-template-columns: repeat(5, auto);
 		gap: 10px;
 		border: var(--contour);
@@ -26,9 +29,6 @@
 		scrollbar-width: none;
 		&::-webkit-scrollbar {
 			display: none;
-		}
-		&.active {
-			display: grid;
 		}
 	}
 </style>

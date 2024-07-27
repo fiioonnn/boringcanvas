@@ -39,6 +39,12 @@
 			value={$app.debug}
 			fn={() => ($app.debug = !$app.debug)}
 		/>
+		<SettingsItem
+			text="Minimap"
+			type="toggle"
+			value={$app.showMiniMap}
+			fn={() => ($app.showMiniMap = !$app.showMiniMap)}
+		/>
 	</div>
 	<div class="settings__group">
 		<SettingsItem text="Controls" fn={() => ($app.activeModal = "controls")} />

@@ -24,6 +24,7 @@
 	import { io } from "socket.io-client";
 	import MobileWarning from "#components/MobileWarning/MobileWarning.svelte";
 	import ModMenu from "#components/ModMenu/ModMenu.svelte";
+	import CanvasPixi from "#components/Canvas/CanvasPixi.svelte";
 
 	//
 	// Create the socket client
@@ -53,12 +54,6 @@
 	loader.show({
 		text: "Loading...",
 	});
-
-	//
-	// Create a variable that holds the ping interval
-	//
-
-	let pingInterval = null;
 
 	//
 	// Variable that holds the window width
@@ -151,8 +146,8 @@
 		//
 
 		return () => {
+			clearTimeout(timeout);
 			$socket.disconnect();
-			clearInterval(pingInterval);
 		};
 	});
 
@@ -176,23 +171,6 @@
 		//
 		// Ping the server every second
 		//
-
-		pingInterval = setInterval(() => {
-			const start = Date.now();
-
-			$socket.emit("ping", (data) => {
-				const duration = Date.now() - start;
-				const { version, online, uptime } = data;
-
-				//
-				// Update the app store with the ping and online count
-				//
-
-				$app.ping = duration;
-				$app.onlineCount = online;
-				$app.serverUptime = uptime;
-			});
-		}, 1000);
 	});
 
 	//
@@ -489,7 +467,8 @@
 {/if}
 
 {#if $socket.connected && !$app.isMobile}
-	<Canvas />
+	<!-- Testing -->
+	<CanvasPixi />
 {/if}
 
 {#if $app.infobox}
