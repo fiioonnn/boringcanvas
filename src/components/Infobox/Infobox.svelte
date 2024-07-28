@@ -3,12 +3,14 @@
 	import ServerPing from "./ServerPing.svelte";
 	import { app } from "#store/stores";
 	import { fly } from "svelte/transition";
+	import Zoom from "./Zoom.svelte";
 </script>
 
-<div class="infobox" transition:fly={{ duration: 300, y: -100 }}>
-	<OnlineCount bind:count={$app.onlineCount} />
-	<ServerPing bind:ping={$app.ping} />
-</div>
+<ul class="infobox" transition:fly={{ duration: 300, y: -100 }}>
+	<li><OnlineCount bind:count={$app.onlineCount} /></li>
+	<li><ServerPing bind:ping={$app.ping} /></li>
+	<li><Zoom /></li>
+</ul>
 
 <style lang="scss">
 	.infobox {
@@ -25,7 +27,19 @@
 		padding: 0 20px;
 		display: flex;
 		align-items: center;
-		gap: 20px;
+		gap: 0;
+		// gap: 20px;
 		z-index: 200;
+
+		li {
+			&::before {
+				display: none;
+			}
+			&:not(:first-child) {
+				border-left: 1px solid var(--buttons);
+				padding-left: 10px;
+				margin-left: 10px;
+			}
+		}
 	}
 </style>

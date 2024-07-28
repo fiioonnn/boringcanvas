@@ -28,22 +28,22 @@
 			fn={() => ($settings.showCursors = !$settings.showCursors)}
 		/>
 		<SettingsItem
-			text="Serverinfo"
+			text="Infobox"
 			type="toggle"
-			value={$app.infobox}
-			fn={() => ($app.infobox = !$app.infobox)}
+			value={$settings.showInfobox}
+			fn={() => ($settings.showInfobox = !$settings.showInfobox)}
 		/>
 		<SettingsItem
 			text="Debug"
 			type="toggle"
-			value={$app.debug}
-			fn={() => ($app.debug = !$app.debug)}
+			value={$settings.showDebug}
+			fn={() => ($settings.showDebug = !$settings.showDebug)}
 		/>
 		<SettingsItem
 			text="Minimap"
 			type="toggle"
-			value={$app.showMiniMap}
-			fn={() => ($app.showMiniMap = !$app.showMiniMap)}
+			value={$settings.ShowMinimap}
+			fn={() => ($settings.ShowMinimap = !$settings.ShowMinimap)}
 		/>
 	</div>
 	<div class="settings__group">

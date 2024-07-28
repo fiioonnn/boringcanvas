@@ -42,11 +42,11 @@
 		<div class="report__actions">
 			{#if active}
 				<button title="Show details" on:click={() => (active = !active)}>
-					<i class="fa-solid fa-eye"></i>
+					<i class="fa-solid fa-eye-slash"></i>
 				</button>
 			{:else}
 				<button title="Hide details" on:click={() => (active = !active)}>
-					<i class="fa-solid fa-eye-slash"></i>
+					<i class="fa-solid fa-eye"></i>
 				</button>
 			{/if}
 			{#if report?.closed}

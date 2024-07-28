@@ -163,12 +163,6 @@
 		loader.hide();
 
 		//
-		// Show infobox after 1 second
-		//
-
-		setTimeout(() => ($app.infobox = true), 1000);
-
-		//
 		// Ping the server every second
 		//
 	});
@@ -178,12 +172,6 @@
 	//
 
 	$socket.on("disconnect", () => {
-		//
-		// Clear the ping interval
-		//
-
-		clearInterval(pingInterval);
-
 		//
 		// Show disconnected loader
 		//
@@ -198,12 +186,6 @@
 	//
 
 	$socket.on("connect_error", (error) => {
-		//
-		// Clear the ping interval
-		//
-
-		clearInterval(pingInterval);
-
 		//
 		// Error: Banned
 		//
@@ -374,7 +356,7 @@
 	//
 
 	function toggleMiniMap() {
-		$app.showMiniMap = !$app.showMiniMap;
+		$settings.showMinimap = !$settings.showMinimap;
 	}
 
 	//
@@ -471,7 +453,7 @@
 	<CanvasPixi />
 {/if}
 
-{#if $app.infobox}
+{#if $settings.showInfobox}
 	<Infobox />
 {/if}
 
