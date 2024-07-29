@@ -152,7 +152,9 @@
 						// start
 						g.setStrokeStyle({
 							width: point.s,
-							color: point.c,
+							color: point.e
+								? toPixiHex($config.canvas.background)
+								: toPixiHex(point.c),
 							alpha: 1,
 							join: "round",
 							cap: "round",
