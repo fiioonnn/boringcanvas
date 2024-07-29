@@ -5,9 +5,10 @@
 	export let value = null;
 	export let type = "button";
 	export let fn = () => {};
+	export let disabled = false;
 </script>
 
-<button class="setting-item {type}" on:click={fn}>
+<button class="setting-item {type}" class:disabled on:click={fn}>
 	<span class="setting-item__text">{text}</span>
 	{#if type === "data"}
 		<span class="setting-item__value">{value}</span>
@@ -20,6 +21,10 @@
 
 <style lang="scss">
 	.setting-item {
+		&.disabled {
+			pointer-events: none;
+			opacity: 0.5;
+		}
 		&.data {
 			cursor: default;
 			color: var(--text-alt);

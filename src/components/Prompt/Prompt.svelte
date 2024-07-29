@@ -1,4 +1,5 @@
 <script>
+	import { app } from "#store/stores";
 	import { slide } from "svelte/transition";
 	import { prompt } from "#store/prompt";
 	import { onMount } from "svelte";
@@ -6,6 +7,12 @@
 	export let value = "";
 	let input;
 	let error;
+
+	$: {
+		if ($prompt.active && $app.keys["Escape"]) {
+			prompt.hide();
+		}
+	}
 
 	onMount(() => {
 		$prompt.input && input.focus();

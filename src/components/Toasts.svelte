@@ -103,6 +103,12 @@
 					20px 20px;
 			}
 		}
+		&--admin {
+			.toast__icon {
+				background: var(--red) url("img/icons/admin.svg") no-repeat center /
+					20px 20px;
+			}
+		}
 		&--broadcast {
 			.toast__icon {
 				background: var(--orange) url("img/icons/message.svg") no-repeat center /

@@ -23,8 +23,9 @@
 	import { onMount } from "svelte";
 	import { io } from "socket.io-client";
 	import MobileWarning from "#components/MobileWarning/MobileWarning.svelte";
-	import ModMenu from "#components/ModMenu/ModMenu.svelte";
 	import CanvasPixi from "#components/Canvas/CanvasPixi.svelte";
+	import Crosshair from "#components/Crosshair/Crosshair.svelte";
+	import ModMenu from "#components/ModMenu/ModMenu.svelte";
 
 	//
 	// Create the socket client
@@ -60,6 +61,12 @@
 	//
 
 	let windowWidth = window.innerWidth;
+
+	//
+	// Variable that holds the ping interval
+	//
+
+	let pingInterval;
 
 	//
 	// onMount lifecycle
@@ -147,6 +154,7 @@
 
 		return () => {
 			clearTimeout(timeout);
+			clearInterval(pingInterval);
 			$socket.disconnect();
 		};
 	});
@@ -165,6 +173,24 @@
 		//
 		// Ping the server every second
 		//
+
+		pingInterval = setInterval(() => {
+			const start = Date.now();
+
+			$socket.emit("ping", (data) => {
+				const duration = Date.now() - start;
+				const { version, online, uptime } = data;
+
+				//
+				// Update the app store with the ping and online count
+				//
+
+				$app.ping = duration;
+				$app.onlineCount = online;
+				$app.serverUptime = uptime;
+				$app.serverVersion = version;
+			});
+		}, 1000);
 	});
 
 	//
@@ -179,6 +205,12 @@
 		loader.show({
 			text: "Disconnected. Trying to reconnect..",
 		});
+
+		//
+		// Clear the ping interval
+		//
+
+		clearInterval(pingInterval);
 	});
 
 	//
@@ -252,28 +284,29 @@
 	//
 
 	$socket.on("action", (action) => {
-		if (action === "unlock") {
+		if (action.id === "unlock") {
 			$app.isAdmin = true;
 		}
 
-		if (action === "lock") {
+		if (action.id === "lock") {
 			$app.isAdmin = false;
 		}
 
-		if (action === "ban") {
+		if (action.id === "ban") {
 			banned();
 			$socket.disconnect();
 		}
 
-		if (action === "kick") {
+		if (action.id === "kick") {
 			$socket.disconnect();
 			screen.show({
-				title: "You were kicked from the server",
-				text: "This is a warning, you can now reconnect by reloading this page.",
+				title: "You have been kicked",
+				text: action?.reason ? `Reason: ${action.reason || "N/A"}` : "",
+				keys: ["CTRL", "Shift", "R"],
 			});
 		}
 
-		if (action === "namechange") {
+		if (action.id === "namechange") {
 			resetUsername("Please change your username.");
 			screen.show({
 				title: "Forced name change",
@@ -467,7 +500,7 @@
 {/if}
 
 {#if $app.activeModal === "settings"}
-	<Modal title="Settings" width={500}>
+	<Modal title="Settings" width={600}>
 		<Settings />
 	</Modal>
 {:else if $app.activeModal === "controls"}
@@ -507,6 +540,12 @@
 {#if $screen.active}
 	<Screen />
 {/if}
+
+{#if $settings.showCrosshair}
+	<Crosshair />
+{/if}
+
+<!-- <ModMenu /> -->
 
 <style lang="scss">
 	.download {

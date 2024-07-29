@@ -48,6 +48,7 @@
 			align-items: center;
 			gap: 10px;
 			color: var(--text-alt);
+			margin-top: 10px;
 		}
 	}
 </style>

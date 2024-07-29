@@ -12,7 +12,6 @@
 		display: flex;
 		align-items: center;
 		gap: 10px;
-		font-weight: 700;
 		&__indicator {
 			width: 10px;
 			height: 10px;

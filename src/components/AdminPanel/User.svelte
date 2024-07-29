@@ -43,9 +43,9 @@
 		prompt.show({
 			text: `Are you sure you want to kick ${user.username}?`,
 			cancel: true,
-			input: false,
+			placeholder: "Enter the reason..",
 			fn: (reason) => {
-				run(`kick ${user.username}`);
+				run(`kick ${user.username} ${reason}`);
 			},
 		});
 	}

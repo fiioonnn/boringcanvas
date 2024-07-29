@@ -18,8 +18,10 @@
 </script>
 
 <div class="settings">
-	<SettingsItem text="Username" type="data" value={$username} />
-	<SettingsItem text="Version" type="data" value={$app.version} />
+	<div class="settings__group">
+		<SettingsItem text="Username" type="data" value={$username} />
+		<SettingsItem text="Version" type="data" value={$app.version} />
+	</div>
 	<div class="settings__group">
 		<SettingsItem
 			text="Cursors"
@@ -44,9 +46,16 @@
 			type="toggle"
 			value={$settings.ShowMinimap}
 			fn={() => ($settings.ShowMinimap = !$settings.ShowMinimap)}
+			disabled
+		/>
+		<SettingsItem
+			text="Crosshair"
+			type="toggle"
+			value={$settings.showCrosshair}
+			fn={() => ($settings.showCrosshair = !$settings.showCrosshair)}
 		/>
 	</div>
-	<div class="settings__group">
+	<div class="settings__group settings__group--medium">
 		<SettingsItem text="Controls" fn={() => ($app.activeModal = "controls")} />
 		<SettingsItem text="Rules" fn={() => ($app.activeModal = "rules")} />
 		<SettingsItem text="Donate" fn={() => ($app.activeModal = "donate")} />
@@ -69,8 +78,11 @@
 		user-select: none;
 		&__group {
 			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 			gap: 15px;
+			&--medium {
+				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			}
 		}
 	}
 </style>

@@ -44,7 +44,7 @@ export const app = writable({
 	connected: false,
 	// Canvas
 	canvasZoom: 1,
-	canvasPos: [0, 0],
+	canvasLocation: [0, 0],
 });
 
 // Username
@@ -70,6 +70,7 @@ const storedSettings = JSON.parse(localStorage.getItem("settings")) || {
 	showDebug: false,
 	showMinimap: false,
 	showInfobox: true,
+	showCrosshair: false,
 };
 export const settings = writable(storedSettings);
 settings.subscribe((value) => {

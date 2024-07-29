@@ -42,14 +42,6 @@
 		$socket.emit("get:admindata");
 	}
 
-	//
-	// Function to change active tab
-	//
-
-	function changeTab(tab) {
-		active = tab;
-	}
-
 	function toReadableTime(ms) {
 		const days = Math.floor(ms / (1000 * 60 * 60 * 24));
 		const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -72,6 +64,11 @@
 		</p>
 		<p class="admin-panel__tag">
 			Draw points: <span>{data?.drawings}</span>
+		</p>
+		<p class="admin-panel__tag">
+			Drawings in KB: <span
+				>{Math.floor((data?.drawingsSize / 1000) * 100) / 100} KB</span
+			>
 		</p>
 	</div>
 	<div class="admin-panel__navigation">

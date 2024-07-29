@@ -574,10 +574,6 @@
 	class:erasing={$tools.eraser}
 ></canvas>
 
-{#if $app.showMiniMap}
-	<MiniMap bind:source={ctx} size={400} bind:transform />
-{/if}
-
 {#if $app.debug}
 	<Debugger
 		items={{

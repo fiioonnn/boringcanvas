@@ -1,15 +1,22 @@
 <script>
 	import OnlineCount from "./OnlineCount.svelte";
 	import ServerPing from "./ServerPing.svelte";
+	import Location from "./Location.svelte";
+	import Zoom from "./Zoom.svelte";
+	import AdminIcon from "./AdminIcon.svelte";
+
 	import { app } from "#store/stores";
 	import { fly } from "svelte/transition";
-	import Zoom from "./Zoom.svelte";
 </script>
 
 <ul class="infobox" transition:fly={{ duration: 300, y: -100 }}>
+	{#if $app.isAdmin}
+		<li><AdminIcon /></li>
+	{/if}
 	<li><OnlineCount bind:count={$app.onlineCount} /></li>
 	<li><ServerPing bind:ping={$app.ping} /></li>
 	<li><Zoom /></li>
+	<li><Location /></li>
 </ul>
 
 <style lang="scss">
