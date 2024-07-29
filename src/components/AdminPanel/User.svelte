@@ -51,7 +51,7 @@
 	}
 
 	function forceNameChange() {
-		run(`clear ${user.username}`);
+		// run(`clear ${user.username}`);
 		run(`fnc ${user.username}`);
 	}
 

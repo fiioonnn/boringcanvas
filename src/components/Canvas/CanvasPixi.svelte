@@ -143,6 +143,11 @@
 				// fix this later !!!
 				const g = new Graphics();
 				data.forEach((point) => {
+					if (point?.image) {
+						drawImage(point.image, point.pos);
+						return;
+					}
+
 					if (point?.c) {
 						// start
 						g.setStrokeStyle({
@@ -266,23 +271,7 @@
 		// Socket on image
 
 		$socket.on("draw:image", ({ image, pos }) => {
-			const img = new Image();
-
-			img.src = image;
-
-			img.onload = () => {
-				const texture = Texture.from(img);
-				const sprite = new Sprite(texture);
-
-				sprite.anchor.set(0.5);
-				sprite.position.set(pos[X], pos[Y]);
-
-				container.addChild(sprite);
-			};
-
-			img.onerror = () => {
-				console.error("Failed to load image");
-			};
+			drawImage(image, pos);
 		});
 
 		// Socket on clear
@@ -325,6 +314,27 @@
 			translate();
 			updateLocation();
 		});
+	}
+
+	function drawImage(image, pos) {
+		const img = new Image();
+		console.log(img);
+		img.src = image;
+
+		img.onload = () => {
+			const texture = Texture.from(img);
+			const sprite = new Sprite(texture);
+
+			sprite.anchor.set(0.5);
+			sprite.position.set(pos[X], pos[Y]);
+
+			container.addChild(sprite);
+		};
+
+		img.onerror = (err) => {
+			console.log(err);
+			console.error("Failed to load image");
+		};
 	}
 
 	// Go to center
@@ -583,7 +593,6 @@
 		image.src = URL.createObjectURL(file);
 
 		reader.onload = (e) => {
-			console.log(e);
 			$socket.emit("draw:image", {
 				image: e.target.result,
 				pos: [mouse.pos[X] + image.width / 2, mouse.pos[Y] + image.height / 2],
