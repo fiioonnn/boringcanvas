@@ -58,6 +58,14 @@
 	function clear() {
 		run(`clear ${user.username}`);
 	}
+
+	function mute() {
+		run(`mute ${user.username}`);
+	}
+
+	function unmute() {
+		run(`unmute ${user.username}`);
+	}
 </script>
 
 <div
@@ -94,6 +102,15 @@
 			{:else}
 				<button title="Give admin" on:click={giveAdmin}>
 					<i class="fa-solid fa-user-shield"></i>
+				</button>
+			{/if}
+			{#if user?.muted}
+				<button title="Unmute" on:click={unmute}>
+					<i class="fa-solid fa-volume-high"></i>
+				</button>
+			{:else}
+				<button title="Mute" on:click={mute}>
+					<i class="fa-solid fa-volume-mute"></i>
 				</button>
 			{/if}
 		{/if}

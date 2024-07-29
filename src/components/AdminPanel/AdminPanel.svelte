@@ -5,6 +5,7 @@
 	import Users from "./Users.svelte";
 	import Actions from "./Actions.svelte";
 	import Reports from "./Reports.svelte";
+	import UserHistory from "./UserHistory.svelte";
 
 	let data;
 	let active = "users";
@@ -96,6 +97,12 @@
 		>
 			Command history
 		</button>
+		<button
+			on:click={() => (active = "userhistory")}
+			class:active={active === "userhistory"}
+		>
+			User history
+		</button>
 	</div>
 	{#if active === "users"}
 		<h3>Users</h3>
@@ -109,6 +116,8 @@
 	{:else if active === "cmdhistory"}
 		<h3>Command history</h3>
 		<CommandHistory history={data?.commandHistory} />
+	{:else if active === "userhistory"}
+		<UserHistory history={data?.userHistory} />
 	{/if}
 </div>
 

@@ -354,6 +354,25 @@
 		$app.keys[event.key] = true;
 
 		if (
+			!$app.activeModal &&
+			!$prompt.active &&
+			$app.keys["r"] &&
+			!$screen.active
+		) {
+			$app.activeModal = "report";
+		}
+
+		if (
+			!$app.activeModal &&
+			!$prompt.active &&
+			$app.keys["p"] &&
+			$app.isAdmin &&
+			!$screen.active
+		) {
+			$app.activeModal = "admin-panel";
+		}
+
+		if (
 			$app.keys["Control"] &&
 			($app.keys["+"] || $app.keys["-"] || $app.keys["s"])
 		)
@@ -524,7 +543,7 @@
 		<Report />
 	</Modal>
 {:else if $app.activeModal === "admin-panel" && $app.isAdmin}
-	<Modal title="Admin Panel" width={900}>
+	<Modal title="Admin Panel" width={1000}>
 		<AdminPanel />
 	</Modal>
 {:else if $app.activeModal === "note"}

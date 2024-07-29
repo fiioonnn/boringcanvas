@@ -283,9 +283,7 @@
 				goToCenter();
 			}
 
-			setTimeout(() => {
-				loadCanvas();
-			}, 1000);
+			loadCanvas();
 		});
 
 		// Socket on clear area
@@ -340,6 +338,11 @@
 	// Go to center
 
 	function goToCenter() {
+		mouse.drawing = false;
+		mouse.panning = false;
+
+		$socket.emit("path:end");
+
 		transform[X] = Math.round(
 			window.innerWidth / 2 - $config.canvas.size[0] / 2
 		);
@@ -647,6 +650,8 @@
 			translate();
 		}
 	}
+
+	// maybe add a /mute command so that a users draws but others cant see it
 </script>
 
 <svelte:window
