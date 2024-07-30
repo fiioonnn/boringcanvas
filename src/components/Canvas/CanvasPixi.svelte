@@ -123,6 +123,7 @@
 			$socket.off("canvas:clear");
 			$socket.off("canvas:cleararea");
 			$socket.off("canvas:teleport");
+			$socket.off("action");
 
 			// Destroy pixi app
 
@@ -187,8 +188,8 @@
 		const texture = await Assets.load("img/logo.png");
 
 		const sprite = new Sprite(texture);
-		sprite.width = 250;
-		sprite.height = 250;
+		sprite.width = 200;
+		sprite.height = 200;
 		sprite.anchor.set(0.5);
 		sprite.alpha = 1;
 		sprite.position.set($config.canvas.size[0] / 2, $config.canvas.size[1] / 2);
@@ -210,12 +211,12 @@
 			alpha: 0.1,
 		});
 
-		for (let x = 0; x < $config.canvas.size[0]; x += 50) {
+		for (let x = 0; x < $config.canvas.size[0]; x += 25) {
 			grid.moveTo(x, 0);
 			grid.lineTo(x, $config.canvas.size[1]);
 		}
 
-		for (let y = 0; y < $config.canvas.size[1]; y += 50) {
+		for (let y = 0; y < $config.canvas.size[1]; y += 25) {
 			grid.moveTo(0, y);
 			grid.lineTo($config.canvas.size[0], y);
 		}
@@ -230,6 +231,13 @@
 	// Socket events
 
 	function socketEvents() {
+		$socket.on("action", (action) => {
+			if (action.type === "loadcanvas") {
+				clear();
+				loadCanvas();
+			}
+		});
+
 		// Socket on path start
 
 		$socket.on("path:start", (data) => {
@@ -318,7 +326,6 @@
 
 	function drawImage(image, pos) {
 		const img = new Image();
-		console.log(img);
 		img.src = image;
 
 		img.onload = () => {
@@ -330,11 +337,6 @@
 
 			container.addChild(sprite);
 		};
-
-		img.onerror = (err) => {
-			console.log(err);
-			console.error("Failed to load image");
-		};
 	}
 
 	// Go to center
@@ -345,14 +347,14 @@
 
 		$socket.emit("path:end");
 
+		scale = 2;
+
 		transform[X] = Math.round(
-			window.innerWidth / 2 - $config.canvas.size[0] / 2
+			window.innerWidth / 2 - ($config.canvas.size[0] / 2) * scale
 		);
 		transform[Y] = Math.round(
-			window.innerHeight / 2 - $config.canvas.size[1] / 2
+			window.innerHeight / 2 - ($config.canvas.size[1] / 2) * scale
 		);
-
-		scale = 1;
 
 		translate();
 	}
@@ -424,13 +426,15 @@
 	}
 
 	// Pointer move
-
+	let lastToast = 0;
 	function pointerMove(e) {
 		updateMouse(e);
 
 		// Drawing logic
 
 		if (mouse.drawing) {
+			if (!checkZoom()) return;
+
 			pathCount++;
 
 			if (pathCount % 2 !== 0) return;
@@ -573,6 +577,11 @@
 	// Clear the canvas
 
 	function clear() {
+		$socket.emit("path:end");
+
+		mouse.drawing = false;
+		mouse.panning = false;
+
 		// Clear the container
 		container.removeChildren();
 
@@ -583,6 +592,25 @@
 		// Load the canvas
 
 		loadCanvas();
+	}
+
+	// Zoom draw protection
+
+	function checkZoom() {
+		if (scale < 2) {
+			if (Date.now() - lastToast > 2000) {
+				lastToast = Date.now();
+
+				toasts.create(
+					"Drawing disabled",
+					"You can't draw when the zoom is below 100%\nPlease zoom in to draw.",
+					"error",
+					2000
+				);
+			}
+			return false;
+		}
+		return true;
 	}
 
 	// Drop

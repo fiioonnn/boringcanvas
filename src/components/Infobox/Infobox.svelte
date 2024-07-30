@@ -7,6 +7,7 @@
 
 	import { app } from "#store/stores";
 	import { fly } from "svelte/transition";
+	import Votes from "./Votes.svelte";
 </script>
 
 <ul class="infobox" transition:fly={{ duration: 300, y: -100 }}>
@@ -17,6 +18,9 @@
 	<li><ServerPing bind:ping={$app.ping} /></li>
 	<li><Zoom /></li>
 	<li><Location /></li>
+	{#if $app.vote.enabled}
+		<li><Votes /></li>
+	{/if}
 </ul>
 
 <style lang="scss">

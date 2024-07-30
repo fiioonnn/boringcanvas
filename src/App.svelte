@@ -94,6 +94,18 @@
 		if (!$note) $app.activeModal = "note";
 
 		//
+		// Server warning if localhost
+		//
+
+		if ($app.serverURL.indexOf("localhost") !== -1) {
+			prompt.show({
+				text: "Running on localhost! Dont forget to change the server URL when deploying.",
+				placeholder: "Server URL",
+				input: false,
+			});
+		}
+
+		//
 		// Load the config from the server
 		//
 
@@ -189,6 +201,8 @@
 				$app.onlineCount = online;
 				$app.serverUptime = uptime;
 				$app.serverVersion = version;
+
+				$app.vote = data.vote;
 			});
 		}, 1000);
 	});
@@ -452,6 +466,70 @@
 	}
 
 	//
+	// Get a randomly generated username
+	//
+
+	function getRandomUsername() {
+		const adjectives = [
+			"Adorable",
+			"Beautiful",
+			"Clever",
+			"Delightful",
+			"Creative",
+			"Boring",
+			"Fancy",
+			"Funny",
+			"Gentle",
+			"Happy",
+			"Jolly",
+			"Kind",
+			"Lively",
+			"Nice",
+			"Obedient",
+			"Proud",
+			"Relieved",
+			"Silly",
+			"Thankful",
+			"Victorious",
+			"Witty",
+			"Young",
+		];
+
+		const nouns = [
+			"Apple",
+			"Banana",
+			"Cherry",
+			"Elderberry",
+			"Fig",
+			"Grape",
+			"Honeydew",
+			"Jackfruit",
+			"Kiwi",
+			"Lemon",
+			"Mango",
+			"Nectarine",
+			"Orange",
+			"Peach",
+			"Quince",
+			"Raspberry",
+			"Strawberry",
+			"Tomato",
+			"Vanilla",
+			"Watermelon",
+			"Ximenia",
+			"Yuzu",
+			"Zucchini",
+		];
+
+		const randomAdjective =
+			adjectives[Math.floor(Math.random() * adjectives.length)];
+
+		const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+
+		return `${randomAdjective}-${randomNoun}`;
+	}
+
+	//
 	// Opens a prompt to set the username
 	//
 
@@ -459,7 +537,7 @@
 		if (!$username) {
 			prompt.show({
 				text: "Please enter your username",
-				placeholder: "e.g. Drawing Dolphin",
+				placeholder: `e.g. ${getRandomUsername()}`,
 				fn: (value) => {
 					$username = value;
 					$socket.connect({ username: value });

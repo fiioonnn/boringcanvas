@@ -7,6 +7,7 @@ function createPromptStore() {
 		cancel: false,
 		input: true,
 		buttonText: "OK",
+		prefilled: "",
 		fn: (value) => {
 			return false;
 		},
@@ -21,6 +22,7 @@ function createPromptStore() {
 			cancel,
 			input = true,
 			buttonText,
+			prefilled,
 			fn = () => {},
 		} = props;
 
@@ -31,6 +33,7 @@ function createPromptStore() {
 				cancel,
 				input,
 				buttonText,
+				prefilled,
 				fn,
 				active: true,
 			};
@@ -48,6 +51,7 @@ function createPromptStore() {
 					cancel: false,
 					input: true,
 					buttonText: "OK",
+					prefilled: "",
 					fn: (value) => {
 						return false;
 					},

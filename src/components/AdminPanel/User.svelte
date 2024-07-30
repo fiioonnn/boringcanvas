@@ -130,6 +130,7 @@
 		padding-left: 15px;
 		gap: 5px;
 		overflow: hidden;
+		min-height: 50px;
 		&__name {
 			font-weight: 700;
 			color: var(--text);

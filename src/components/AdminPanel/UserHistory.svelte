@@ -2,6 +2,8 @@
 	import User from "./User.svelte";
 
 	export let history;
+
+	history = history.reverse();
 </script>
 
 <div class="user-history">

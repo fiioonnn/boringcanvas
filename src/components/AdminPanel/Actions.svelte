@@ -46,6 +46,46 @@
 			},
 		});
 	}
+
+	function saveCanvas() {
+		run("canvas save");
+	}
+
+	function loadCanvas() {
+		run("canvas load");
+	}
+
+	function loadCanvasByIndex() {
+		$app.activeModal = "";
+		prompt.show({
+			text: "Enter the index",
+			placeholder: "e.g. 0",
+			cancel: true,
+			fn: (message) => {
+				$socket.emit("command", `/canvas load ${message}`);
+			},
+		});
+	}
+
+	function startVote() {
+		run("vote start");
+	}
+
+	function cancelVote() {
+		run("vote cancel");
+	}
+
+	function voteCustom() {
+		$app.activeModal = "";
+		prompt.show({
+			text: "Enter the needed vote amount",
+			placeholder: "e.g. 10",
+			cancel: true,
+			fn: (message) => {
+				run(`vote start ${message}`);
+			},
+		});
+	}
 </script>
 
 <div class="actions">
@@ -54,6 +94,12 @@
 	<button on:click={broadcast}>Broadcast</button>
 	<button on:click={logout}>Logout</button>
 	<button on:click={teleport}>Teleport</button>
+	<button on:click={saveCanvas}>Create backup</button>
+	<button on:click={loadCanvas}>Load backup</button>
+	<button on:click={loadCanvasByIndex}>Load backup (by index)</button>
+	<button on:click={startVote}>Start vote (online users)</button>
+	<button on:click={voteCustom}>Start vote (custom)</button>
+	<button on:click={cancelVote}>Cancel vote (clearing)</button>
 </div>
 
 <style lang="scss">

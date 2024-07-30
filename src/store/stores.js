@@ -3,7 +3,7 @@ import { writable } from "svelte/store";
 // Tools
 const storedTools = JSON.parse(localStorage.getItem("tools")) || {
 	color: "#ffffff",
-	size: 5,
+	size: 1,
 	eraser: false,
 };
 export const tools = writable(storedTools);
@@ -45,6 +45,7 @@ export const app = writable({
 	// Canvas
 	canvasZoom: 1,
 	canvasLocation: [0, 0],
+	vote: {},
 });
 
 // Username

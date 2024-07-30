@@ -1,21 +1,24 @@
 <script>
-	import { app } from "#store/stores";
+	import { app, username } from "#store/stores";
 	import { slide } from "svelte/transition";
 	import { prompt } from "#store/prompt";
 	import { onMount } from "svelte";
 
-	export let value = "";
+	export let value;
 	let input;
 	let error;
 
 	$: {
-		if ($prompt.active && $app.keys["Escape"]) {
+		if ($prompt.active && $app.keys["Escape"] && $username !== "") {
 			prompt.hide();
 		}
 	}
 
 	onMount(() => {
 		$prompt.input && input.focus();
+		setTimeout(() => {
+			value = $prompt.prefilled || "";
+		}, 10);
 	});
 
 	function handleSubmit() {
