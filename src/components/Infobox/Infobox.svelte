@@ -18,7 +18,7 @@
 	<li><ServerPing bind:ping={$app.ping} /></li>
 	<li><Zoom /></li>
 	<li><Location /></li>
-	{#if $app.vote.enabled}
+	{#if $app?.vote?.enabled}
 		<li><Votes /></li>
 	{/if}
 </ul>

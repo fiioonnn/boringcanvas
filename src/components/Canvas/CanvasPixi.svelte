@@ -437,7 +437,7 @@
 
 			pathCount++;
 
-			if (pathCount % 2 !== 0) return;
+			if (pathCount % 3 !== 0) return;
 
 			path.lineTo(mouse.pos[X], mouse.pos[Y]);
 			path.stroke();
@@ -565,6 +565,8 @@
 	function drawDot(x, y, color, size, erase) {
 		const dot = new Graphics();
 
+		if (!checkZoom()) return;
+
 		// dot.blendMode = erase ? "erase" : "normal";
 		dot.circle(x, y, size / 2);
 		dot.fill({
@@ -597,13 +599,15 @@
 	// Zoom draw protection
 
 	function checkZoom() {
+		if ($app.isAdmin) return true;
+
 		if (scale < 2) {
 			if (Date.now() - lastToast > 2000) {
 				lastToast = Date.now();
 
 				toasts.create(
 					"Drawing disabled",
-					"You can't draw when the zoom is below 100%\nPlease zoom in to draw.",
+					"You can't draw when the zoom is below 200%\nPlease zoom in to draw.",
 					"error",
 					2000
 				);
