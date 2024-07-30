@@ -47,6 +47,10 @@
 
 	let path = null;
 
+	// Path id
+
+	let pathId = generateId();
+
 	// Path count for performance
 
 	let pathCount = 0;
@@ -133,6 +137,25 @@
 
 	// Load the canvas
 
+	// { start: timestamp, x,y etc} - sort this timestamp 2
+	// { draw:  x,y }
+	// { draw:  x,y }
+	// { end: timestamp }
+
+	// { start: timestamp, x,y etc} - sort this timestamp 1
+	// { draw:  x,y }
+	// { draw:  x,y }
+	// { draw:  x,y }
+	// { end: timestamp }
+
+	// { start: timestamp, x,y etc} - sort this timestamp 3
+	// { draw:  x,y }
+	// { draw:  x,y }
+	// { draw:  x,y }
+	// { draw:  x,y }
+	// { draw:  x,y }
+	// { end: timestamp }
+
 	function loadCanvas() {
 		loader.show({ text: "Loading canvas..." });
 		fetch($app.serverURL + "/canvas")
@@ -140,42 +163,60 @@
 				return res.json();
 			})
 			.then((data) => {
-				// Super unperformant, but working for now
-				// fix this later !!!
-				const g = new Graphics();
-				data.forEach((point) => {
-					if (point?.image) {
-						drawImage(point.image, point.pos);
-						return;
+				// Group pId's
+				const _paths = data.reduce((acc, point) => {
+					if (point?.pId) {
+						acc[point.pId] = acc[point.pId] || [];
+						acc[point.pId].push(point);
 					}
+					return acc;
+				}, {});
 
-					if (point?.c) {
-						// start
-						g.setStrokeStyle({
-							width: point.s,
-							color: point.e
-								? toPixiHex($config.canvas.background)
-								: toPixiHex(point.c),
-							alpha: 1,
-							join: "round",
-							cap: "round",
-						});
+				// Sort the paths by timestamp
+				let entries = Object.entries(_paths);
 
-						g.moveTo(point.x, point.y);
+				entries.sort((a, b) => {
+					return a[1][0].t - b[1][0].t;
+				});
 
-						drawDot(point.x, point.y, point.c, point.s, point.e);
-					}
+				const paths = entries.map((entry) => entry[1]);
+				// draw the paths
+				paths.forEach((points) => {
+					const g = new Graphics();
+					points.forEach((point) => {
+						if (point?.image) {
+							drawImage(point.image, point.pos);
+							return;
+						}
 
-					if (!point.c && point.x) {
-						// draw
-						g.lineTo(point.x, point.y);
-						g.stroke();
-					}
+						if (point?.c) {
+							// start
+							g.setStrokeStyle({
+								width: point.s,
+								color: point.e
+									? toPixiHex($config.canvas.background)
+									: toPixiHex(point.c),
+								alpha: 1,
+								join: "round",
+								cap: "round",
+							});
 
-					if (!point.x) {
-						// end
-						container.addChild(g);
-					}
+							g.moveTo(point.x, point.y);
+
+							drawDot(point.x, point.y, point.c, point.s, point.e);
+						}
+
+						if (!point.c && point.x) {
+							// draw
+							g.lineTo(point.x, point.y);
+							g.stroke();
+						}
+
+						if (!point.x) {
+							// end
+							container.addChild(g);
+						}
+					});
 				});
 
 				loader.hide();
@@ -345,8 +386,6 @@
 		mouse.drawing = false;
 		mouse.panning = false;
 
-		$socket.emit("path:end");
-
 		scale = 2;
 
 		transform[X] = Math.round(
@@ -372,6 +411,8 @@
 
 		if (mouse.drawing) {
 			// Single dot
+
+			pathId = generateId();
 
 			drawDot(
 				mouse.pos[X],
@@ -404,6 +445,7 @@
 				c: $tools.color,
 				s: $tools.size,
 				e: $tools.eraser,
+				pId: pathId,
 			});
 		}
 	}
@@ -422,7 +464,7 @@
 
 		mouse.posLast = [0, 0];
 
-		e.button === 0 && $socket.emit("path:end");
+		e.button === 0 && $socket.emit("path:end", { pId: pathId });
 	}
 
 	// Pointer move
@@ -437,7 +479,7 @@
 
 			pathCount++;
 
-			if (pathCount % 3 !== 0) return;
+			if (pathCount % 2 !== 0) return;
 
 			path.lineTo(mouse.pos[X], mouse.pos[Y]);
 			path.stroke();
@@ -445,6 +487,7 @@
 			$socket.emit("path:draw", {
 				x: mouse.pos[X],
 				y: mouse.pos[Y],
+				pId: pathId,
 			});
 		}
 
@@ -543,6 +586,11 @@
 		transform[X] = Math.max(minX, Math.min(transform[X], 0));
 		transform[Y] = Math.max(minY, Math.min(transform[Y], 0));
 
+		transform = [
+			Number(transform[X].toFixed(0)),
+			Number(transform[Y].toFixed(0)),
+		];
+
 		container.position.set(transform[X], transform[Y]);
 		container.scale.set(scale);
 
@@ -563,9 +611,9 @@
 	// Draw a single dot
 
 	function drawDot(x, y, color, size, erase) {
-		const dot = new Graphics();
-
 		if (!checkZoom()) return;
+
+		const dot = new Graphics();
 
 		// dot.blendMode = erase ? "erase" : "normal";
 		dot.circle(x, y, size / 2);
@@ -599,6 +647,7 @@
 	// Zoom draw protection
 
 	function checkZoom() {
+		if (!mouse.drawing) return true;
 		if ($app.isAdmin) return true;
 
 		if (scale < 2) {
@@ -675,6 +724,22 @@
 		}
 	}
 
+	// Generate a random id
+
+	function generateId(length = 8) {
+		const characters =
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_#.!";
+		let result = "";
+
+		for (let i = 0; i < length; i++) {
+			result += characters.charAt(
+				Math.floor(Math.random() * characters.length)
+			);
+		}
+
+		return result;
+	}
+
 	// Reset zoom and transform
 
 	$: {
@@ -726,6 +791,7 @@
 			Transform: transform.join(" : "),
 			Scale: scale,
 			Connected: $socket.connected,
+			PathId: pathId,
 		}}
 	/>
 {/if}

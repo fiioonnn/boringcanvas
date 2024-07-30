@@ -4,7 +4,7 @@
 	import { prompt } from "#store/prompt";
 	import { onMount } from "svelte";
 
-	export let value;
+	let value;
 	let input;
 	let error;
 

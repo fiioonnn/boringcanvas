@@ -36,8 +36,8 @@ export const app = writable({
 	isAdmin: false,
 	ping: 0,
 	onlineCount: 0,
-	serverURL: "https://s1.boringcanvas.io",
-	// serverURL: "http://localhost:4000",
+	// serverURL: "https://s1.boringcanvas.io",
+	serverURL: "http://localhost:4000",
 	serverUptime: 0,
 	serverVersion: "0.0.0",
 	isMobile: false,
@@ -46,6 +46,8 @@ export const app = writable({
 	canvasZoom: 1,
 	canvasLocation: [0, 0],
 	vote: {},
+	// Chat
+	chatActive: false,
 });
 
 // Username

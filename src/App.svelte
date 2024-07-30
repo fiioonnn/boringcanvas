@@ -26,6 +26,7 @@
 	import CanvasPixi from "#components/Canvas/CanvasPixi.svelte";
 	import Crosshair from "#components/Crosshair/Crosshair.svelte";
 	import ModMenu from "#components/ModMenu/ModMenu.svelte";
+	import Chat from "#components/Chat/Chat.svelte";
 
 	//
 	// Create the socket client
@@ -362,10 +363,10 @@
 	//
 
 	function handleKeyDown(event) {
+		$app.keys[event.key] = true;
+
 		if (!$screen.active && !$app.activeModal && !$prompt.active)
 			event.preventDefault();
-
-		$app.keys[event.key] = true;
 
 		if (
 			!$app.activeModal &&
@@ -392,17 +393,30 @@
 		)
 			event.preventDefault();
 
-		if (
-			$app.keys["m"] &&
-			!$app.activeModal &&
-			$socket.connected &&
-			!$prompt.active
-		) {
-			toggleMiniMap();
-		}
+		// if (
+		// 	$app.keys["m"] &&
+		// 	!$app.activeModal &&
+		// 	$socket.connected &&
+		// 	!$prompt.active
+		// ) {
+		// 	toggleMiniMap();
+		// }
 
-		if ($app.keys["Escape"]) toggleSettings();
+		if ($app.keys["Escape"]) {
+			// if ($app.chatActive) return ($app.chatActive = false);
+
+			toggleSettings();
+		}
 		if ($app.keys["Control"] && $app.keys["s"]) screenshot();
+
+		if (
+			$app.keys["Enter"] &&
+			!$app.activeModal &&
+			!$prompt.active &&
+			!$screen.active
+		) {
+			$app.chatActive = !$app.chatActive;
+		}
 
 		if ($prompt.active) return;
 
@@ -641,6 +655,8 @@
 {#if $settings.showCrosshair}
 	<Crosshair />
 {/if}
+
+<!-- <Chat /> -->
 
 <!-- <ModMenu /> -->
 
